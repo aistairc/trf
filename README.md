@@ -9,5 +9,5 @@ This is the repository for TRF publication.
 ## Installation
 
 ```
-python setup.py install
+pip install trf
 ```

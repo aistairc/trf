@@ -1,7 +1,4 @@
-.PHONY: test install
+.PHONY: test
 
 test:
 	python -m unittest -v
-
-install:
-	python setup.py install
