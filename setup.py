@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 
 setup(name='trf',
@@ -9,4 +9,5 @@ setup(name='trf',
       author='Akihiko Watanabe',
       author_email='',
       url='',
-      packages=['trf'])
+      packages=find_packages(),
+      entry_points={"console_scripts": ["trf = trf.cmdline:main"]})
