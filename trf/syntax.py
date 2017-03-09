@@ -1,7 +1,8 @@
 import numpy as np
-import CaboCha
+from pyknp import KNP
 
 from trf.chunk import Chunk
+from trf.constant import DefaultOptions
 
 
 class Tree(object):
@@ -43,11 +44,11 @@ class Syntax(object):
     def __init__(self, text, delimiter='\n'):
         self.text = text
         self.delimiter = delimiter
-        self.trees = self._dependency_structure(text,
-                                                delimiter=self.delimiter)
+        self.trees = self._trees(text,
+                                 delimiter=self.delimiter)
 
-    def _dependency_structure(self, text, delimiter):
-        """Analyse dependency structure using CaboCha
+    def _trees(self, text, delimiter):
+        """Analyse dependency structure using KNP
         Args:
             text: input text which contains sentences split by delimiter
         Returns:
@@ -55,20 +56,22 @@ class Syntax(object):
         """
 
         sentences = self.text.split(delimiter)
-        cabocha = CaboCha.Parser()
+        knp = KNP(option=DefaultOptions.KNP)
 
         results = []
 
         for sentence in sentences:
-            tree = cabocha.parse(sentence)
-
             chunks = []
-            for j in range(tree.chunk_size()):
-                chunk = Chunk(j, tree.chunk(j).link, '')
+            for bnst in knp.parse(sentence).bnst_list():
+                chunk = Chunk(chunk_id=bnst.bnst_id,
+                              link=bnst.parent_id,
+                              description=bnst.fstring)
                 chunks.append(chunk)
 
             results.append(Tree(sentence, chunks))
 
+        knp.subprocess.process.stdout.close()
+        knp.juman.subprocess.process.stdout.close()
         return results
 
     def calc_mean_tree_depth(self):

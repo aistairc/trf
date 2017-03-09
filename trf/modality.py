@@ -11,8 +11,15 @@ from trf.chunk import Chunk
 
 
 class Modality(object):
+    """Class for analyze modality
+    """
 
     def __init__(self, text, delimiter='\n'):
+        """
+        Args:
+            text (str)
+            delimiter (str)
+        """
         self.sentences = util.split_text(text, delimiter)
         self.n_sentence = len(self.sentences)
         self.rates = self._rates()

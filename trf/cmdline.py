@@ -32,3 +32,6 @@ def main():
     if Features.TREE_DEPTH in features:
         syntax = Syntax(args.text, delimiter=args.delimiter)
         print("Mean Tree Depth: {:02f}".format(syntax.calc_mean_tree_depth()))
+
+    if Features.MODALITY in features:
+        pass
