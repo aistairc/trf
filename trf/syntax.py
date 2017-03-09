@@ -1,6 +1,8 @@
 import numpy as np
 import CaboCha
 
+from trf.chunk import Chunk
+
 
 class Tree(object):
 
@@ -34,12 +36,6 @@ class Tree(object):
         return current_tree_depth
 
 
-class Chunk(object):
-
-    def __init__(self, chunk):
-        self.link = chunk.link
-
-
 class Syntax(object):
     """Class for syntactic Analysis
     """
@@ -68,7 +64,7 @@ class Syntax(object):
 
             chunks = []
             for j in range(tree.chunk_size()):
-                chunk = Chunk(tree.chunk(j))
+                chunk = Chunk(j, tree.chunk(j).link, '')
                 chunks.append(chunk)
 
             results.append(Tree(sentence, chunks))
