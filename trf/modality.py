@@ -15,7 +15,6 @@ class Modality(object):
     def __init__(self, text, delimiter='\n'):
         self.sentences = util.split_text(text, delimiter)
         self.n_sentence = len(self.sentences)
-        # TODO: io.BufferedReader
         self.rates = self._rates()
 
     def _rates(self):
@@ -23,12 +22,12 @@ class Modality(object):
         Returns:
             dict(str, float)
         """
-        parser = KNP(option="-dpnd-fast -tab")
+        knp = KNP(option="-dpnd-fast -tab")
 
         modality_counter = Counter()
         chunks = []
         for i, s in enumerate(self.sentences):
-            for bnst in parser.parse(s).bnst_list():
+            for bnst in knp.parse(s).bnst_list():
                 chunk = Chunk(chunk_id=bnst.bnst_id,
                               link=bnst.parent,
                               description=bnst.fstring)
@@ -40,7 +39,8 @@ class Modality(object):
 
             n = len(self.sentences)
 
-        parser.subprocess.process.stdout.close()
+        knp.subprocess.process.stdout.close()
+        knp.juman.subprocess.process.stdout.close()
 
         return dict([(k, float(c) / n)
                     for k, c in modality_counter.items()])
