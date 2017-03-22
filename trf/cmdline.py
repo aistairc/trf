@@ -23,7 +23,7 @@ def main():
 
     parser.add_argument("--delimiter",
                         type=str,
-                        default='\n',
+                        default='。',
                         help='features to calculate')
 
     args = parser.parse_args()

@@ -3,11 +3,11 @@
 from __future__ import division, unicode_literals
 
 import re
-from pyknp import KNP
 from collections import Counter
 
 import trf.util as util
 from trf.chunk import Chunk
+from trf.constant import DefaultOptions
 
 
 class Modality(object):
@@ -22,19 +22,24 @@ class Modality(object):
         """
         self.sentences = util.split_text(text, delimiter)
         self.n_sentence = len(self.sentences)
-        self.rates = self._rates()
+        try:
+            from pyknp import KNP
+            self.parser = KNP(option=DefaultOptions.KNP)
+            self.rates = self._rates()
+        except ImportError:
+            self.parser = None
+            self.rates = None
 
     def _rates(self):
         """
         Returns:
             dict(str, float)
         """
-        knp = KNP(option="-dpnd-fast -tab")
 
         modality_counter = Counter()
         chunks = []
         for i, s in enumerate(self.sentences):
-            for bnst in knp.parse(s).bnst_list():
+            for bnst in self.parser.parse(s).bnst_list():
                 chunk = Chunk(chunk_id=bnst.bnst_id,
                               link=bnst.parent,
                               description=bnst.fstring)
@@ -45,9 +50,6 @@ class Modality(object):
             modality_counter += Counter(ms)
 
             n = len(self.sentences)
-
-        knp.subprocess.process.stdout.close()
-        knp.juman.subprocess.process.stdout.close()
 
         return dict([(k, float(c) / n)
                     for k, c in modality_counter.items()])

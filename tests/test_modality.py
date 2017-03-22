@@ -1,18 +1,22 @@
 from __future__ import division, unicode_literals
 
 import unittest
+import warnings
 
 from trf.modality import Modality
 
 
 class TestModality(unittest.TestCase):
 
+    def setUp(self):
+        warnings.simplefilter('ignore', ResourceWarning)
+
     def test_modality(self):
 
-        lines = ['ご飯を食べるらしい',
-                 'ご飯を食べるつもりだ',
-                 'ご飯を食べるつもりだ']
-        modality = Modality('\n'.join(lines), delimiter='\n')
+        text = ''.join(['ご飯を食べるらしい。',
+                         'ご飯を食べるつもりだ。',
+                         'ご飯を食べるつもりだ。'])
+        modality = Modality(text, delimiter='。')
 
         evidence = 0.0
         decision = 0.0
