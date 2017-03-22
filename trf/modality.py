@@ -5,6 +5,8 @@ from __future__ import division, unicode_literals
 import re
 from collections import Counter
 
+from pyknp import KNP
+
 import trf.util as util
 from trf.chunk import Chunk
 from trf.constant import DefaultOptions
@@ -22,13 +24,8 @@ class Modality(object):
         """
         self.sentences = util.split_text(text, delimiter)
         self.n_sentence = len(self.sentences)
-        try:
-            from pyknp import KNP
-            self.parser = KNP(option=DefaultOptions.KNP)
-            self.rates = self._rates()
-        except ImportError:
-            self.parser = None
-            self.rates = None
+        self.parser = KNP(option=DefaultOptions.KNP)
+        self.rates = self._rates()
 
     def _rates(self):
         """
