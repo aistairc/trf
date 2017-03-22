@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from __future__ import division, unicode_literals, print_function
 import sys
 import math
 import argparse
@@ -32,61 +33,72 @@ def parse_argument():
 
 """ measures
 """
-def logprob(lmscore):
-    logprob_list = []
-    for score in lmscore:
-        logprob_list.append(score)
+class Acceptability:
 
-    return logprob_list
+    def __init__(self, std_input):
+
+        lmscore = []
+        for line in std_input:
+            line = line.strip()
+            if line == "OOV":
+                lmscore.append(None)
+            else:
+                lmscore.append(float(line))
+
+    def logprob(self, lmscore):
+        logprob_list = []
+        for score in lmscore:
+            logprob_list.append(score)
+
+        return logprob_list
 
 
-def meanlp(lmscore, sen_len):
-    meanlp_list = []
-    for rnn, sen in zip(lmscore, sen_len):
-        if rnn is not None:
-            score = float(rnn)/sen
-        else:
-            score = None
-        meanlp_list.append(score)
+    def meanlp(self, lmscore, sen_len):
+        meanlp_list = []
+        for rnn, sen in zip(lmscore, sen_len):
+            if rnn is not None:
+                score = float(rnn)/sen
+            else:
+                score = None
+            meanlp_list.append(score)
 
-    return meanlp_list
+        return meanlp_list
 
-def normlp_div(lmscore, unilist):
-    normlp_div_list = []
-    for rnn, uni in zip(lmscore, unilist):
-        if rnn is not None:
-            score = - float(rnn)/uni
-        else:
-            score = None
-        normlp_div_list.append(score)
+    def normlp_div(self, lmscore, unilist):
+        normlp_div_list = []
+        for rnn, uni in zip(lmscore, unilist):
+            if rnn is not None:
+                score = - float(rnn)/uni
+            else:
+                score = None
+            normlp_div_list.append(score)
 
-    return normlp_div_list
+        return normlp_div_list
 
-def norlp_sub(lmscore, unilist):
-    normlp_sub_list = []
-    for rnn, uni in zip(lmscore, unilist):
-        if rnn is not None:
-            score =  (float(rnn) - float(uni))
-        else:
-            score = None
-        normlp_sub_list.append(score)
+    def norlp_sub(self, lmscore, unilist):
+        normlp_sub_list = []
+        for rnn, uni in zip(lmscore, unilist):
+            if rnn is not None:
+                score =  (float(rnn) - float(uni))
+            else:
+                score = None
+            normlp_sub_list.append(score)
 
-    return normlp_sub_list
+        return normlp_sub_list
 
-def slor(lmscore, unilist, sen_len):
-    slor_list = []
-    for rnn, uni, sen in zip(lmscore, unilist, sen_len):
-        if rnn is not None:
-            score = (float(rnn) - uni)/sen
-        else:
-            score = None
-        slor_list.append(score)
+    def slor(self, lmscore, unilist, sen_len):
+        slor_list = []
+        for rnn, uni, sen in zip(lmscore, unilist, sen_len):
+            if rnn is not None:
+                score = (float(rnn) - uni)/sen
+            else:
+                score = None
+            slor_list.append(score)
 
-    return slor_list
+        return slor_list
 
 """ io
 """
-
 def read_key_file(filename):
     with open(filename, "r") as input:
         key_list = [line.rstrip() for line in input]
@@ -140,6 +152,28 @@ def print_results(sentences, lp, mlp, nlpdiv, nlpsub, slr, lmscore, unilmscore):
         print "logprob: {} MeanLP: {} NormLP(Div): {} NormLP(Sub): {} SLOR: {} ".format(elp, emlp, enlpdiv, enlpsub, eslr)
         print " - - - - -"
 
+
+""" preprocessing
+"""
+def calc_unilmscore(sentences, dict_words, total_word_cnt):
+    """ calcualte unigram probability of input sentence
+    """
+
+    uni_list = []
+    for sen in sentences:
+        words = sen.split()
+        uniscore = 0
+        for word in words:
+            uniscore += math.log(float(dict_words.get(word, dict_words["<unk>"])) / float(total_word_cnt))
+        uni_list.append(uniscore)
+    return uni_list
+
+def get_sentence_length(sentences):
+    """ calcualte length of input sentences (number of words for each sentence)
+    """
+    return [len(sen.strip().split()) for sen in sentences]
+
+
 def print_results_with_csv(sentences,
                            key_list,
                            lp,
@@ -149,7 +183,8 @@ def print_results_with_csv(sentences,
                            slr,
                            lmscore,
                            unilmscore):
-
+    """ 計算した値を出力
+    """
     results = zip(sentences, key_list, lp, mlp, nlpdiv, nlpsub, slr, lmscore, unilmscore)
     column_list = ["SecuritiesCode","FilingDate","SectionID"] + ["logprob", "MeanLP", "NormLP(Div)", "NormLP(Sub)", "SLOR"]
     print ",".join(column_list)
@@ -175,39 +210,6 @@ def print_results_with_csv(sentences,
 
     # 最後の要素
     print ",".join([p_key] + map(str, [np.mean(elem) for elem in np.array(accep_list).T]))
-
-""" math
-"""
-def get_lmscore(std_input):
-    """ extract only language model scores from std_input
-    """
-    lmscore = []
-    for line in std_input:
-        line = line.strip()
-        if line == "OOV":
-            lmscore.append(None)
-        else:
-            lmscore.append(float(line))
-    return lmscore
-
-def calc_unilmscore(sentences, dict_words, total_word_cnt):
-    """ calcualte unigram probability of input sentence
-    """
-
-    uni_list = []
-    for sen in sentences:
-        words = sen.split()
-        uniscore = 0
-        for word in words:
-            uniscore += math.log(float(dict_words.get(word, dict_words["<unk>"])) / float(total_word_cnt))
-        uni_list.append(uniscore)
-    return uni_list
-
-def get_sentence_length(sentences):
-    """ calcualte length of input sentences (number of words for each sentence)
-    """
-    return [len(sen.strip().split()) for sen in sentences]
-
 
 """ main
 """
@@ -247,6 +249,7 @@ def main():
                            slr,
                            lmscore,
                            unilmscore)
+
 
 if __name__ == "__main__":
     main()
