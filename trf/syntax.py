@@ -1,8 +1,8 @@
 import numpy as np
-from pyknp import KNP
 
 from trf.chunk import Chunk
 from trf.constant import DefaultOptions
+import trf.util as util
 
 
 class Tree(object):
@@ -44,25 +44,27 @@ class Syntax(object):
     def __init__(self, text, delimiter='\n'):
         self.text = text
         self.delimiter = delimiter
-        self.trees = self._trees(text,
-                                 delimiter=self.delimiter)
+        self.sentences = util.split_text(self.text, delimiter)
+        self.n_sentences = len(self.sentences)
+        try:
+            from pyknp import KNP
+            self.parser = KNP(option=DefaultOptions.KNP)
+            self.trees = self._trees()
+        except ImportError:
+            self.parser = None
+            self.trees = None
 
-    def _trees(self, text, delimiter):
+    def _trees(self):
         """Analyse dependency structure using KNP
-        Args:
-            text: input text which contains sentences split by delimiter
         Returns:
             list(trf.Tree)
         """
 
-        sentences = self.text.split(delimiter)
-        knp = KNP(option=DefaultOptions.KNP)
-
         results = []
 
-        for sentence in sentences:
+        for sentence in self.sentences:
             chunks = []
-            for bnst in knp.parse(sentence).bnst_list():
+            for bnst in self.parser.parse(sentence).bnst_list():
                 chunk = Chunk(chunk_id=bnst.bnst_id,
                               link=bnst.parent_id,
                               description=bnst.fstring)
@@ -70,8 +72,6 @@ class Syntax(object):
 
             results.append(Tree(sentence, chunks))
 
-        knp.subprocess.process.stdout.close()
-        knp.juman.subprocess.process.stdout.close()
         return results
 
     def calc_mean_tree_depth(self):
