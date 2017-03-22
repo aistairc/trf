@@ -37,9 +37,12 @@ class Acceptability:
 
     def __init__(self, std_input, vocab_file, input_sentence_file):
 
-        self.wordfreq_dic, self.totalwordcnt = self._make_wordfreq_dic(vocab_file)    # 学習データの語彙辞書を作成
+        self.wordfreq_dic, self.totalwordcnt = self._make_wordfreq_dic(vocab_file)# 学習データの語彙辞書を作成
         self.input_sentence_list = self._load_input_sentence(input_sentence_file) # 入力文のリストを作成
-        self.lmscore = self._load_lmscore(std_input) # 言語モデルの尤度リストを作成
+        self.lmscore = self._load_lmscore(std_input)                              # 言語モデルの尤度リストを作成
+        self.senlen_list = self._get_sentence_length(self.input_sentence_list)    # 入力文長リスト
+        self.unilmscore = self._get_unilmscore(self.input_sentence_list, self.wordfreq_dic, self.totalwordcnt) # ユニグラム言語モデルの尤度リストを作成
+
 
     @staticmethod
     def _load_lmscore(std_input):
@@ -85,8 +88,14 @@ class Acceptability:
 
         return list_sentence
 
+    @staticmethod
+    def _get_sentence_length(sentences):
+        """ calcualte length of input sentences (number of words for each sentence) (文長)
+        """
+        return [len(sen.strip().split()) for sen in sentences]
 
-    def get_unilmscore(self, sentences, dict_words, total_word_cnt):
+    @staticmethod
+    def _get_unilmscore(sentences, dict_words, total_word_cnt):
         """ calcualte unigram probability of input sentence (ユニグラム言語モデルの尤度)
         """
 
@@ -99,31 +108,25 @@ class Acceptability:
             uni_list.append(uniscore)
         return uni_list
 
-    def get_sentence_length(self, sentences):
-        """ calcualte length of input sentences (number of words for each sentence) (文長)
+
+    def get_logprob(self):
+        """ 言語モデルの尤度リストを返却
         """
-        return [len(sen.strip().split()) for sen in sentences]
+        return self.lmscore
 
-    def get_logprob(self, lmscore):
-        logprob_list = []
-        for score in lmscore:
-            logprob_list.append(score)
-        return logprob_list
-
-    def get_meanlp(self, lmscore, sen_len):
+    def get_meanlp(self):
         meanlp_list = []
-        for rnn, sen in zip(lmscore, sen_len):
+        for rnn, sen in zip(self.lmscore, self.senlen_list):
             if rnn is not None:
                 score = float(rnn)/sen
             else:
                 score = None
             meanlp_list.append(score)
-
         return meanlp_list
 
-    def get_normlp_div(self, lmscore, unilist):
+    def get_normlp_div(self):
         normlp_div_list = []
-        for rnn, uni in zip(lmscore, unilist):
+        for rnn, uni in zip(self.lmscore, self.unilmscore):
             if rnn is not None:
                 score = - float(rnn)/uni
             else:
@@ -132,9 +135,9 @@ class Acceptability:
 
         return normlp_div_list
 
-    def get_norlp_sub(self, lmscore, unilist):
+    def get_norlp_sub(self):
         normlp_sub_list = []
-        for rnn, uni in zip(lmscore, unilist):
+        for rnn, uni in zip(self.lmscore, self.unilmscore):
             if rnn is not None:
                 score =  (float(rnn) - float(uni))
             else:
@@ -145,13 +148,12 @@ class Acceptability:
 
     def get_slor(self, lmscore, unilist, sen_len):
         slor_list = []
-        for rnn, uni, sen in zip(lmscore, unilist, sen_len):
+        for rnn, uni, sen in zip(self.lmscore, self.unilmscore, self.senlen_list):
             if rnn is not None:
                 score = (float(rnn) - uni)/sen
             else:
                 score = None
             slor_list.append(score)
-
         return slor_list
 
 """ io
