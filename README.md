@@ -4,7 +4,7 @@ This is the repository for TRF publication.
 ## Requirements
 
 + Python 2.7+, 3.6+
-+ KNP
++ KNP and pyknp
 
 ## Installation
 
@@ -17,7 +17,7 @@ pip install trf
 ### CLI mode 
 
 ```
-trf --text ""
+trf -f <filename>
 ```
 
 ### Libray

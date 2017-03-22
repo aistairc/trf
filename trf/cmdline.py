@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
+
 from __future__ import print_function
 
+import sys
 import argparse
 
-from trf.contant import Features
 from trf.syntax import Syntax
 
 
@@ -10,16 +12,14 @@ def main():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--text",
+    parser.add_argument("-f",
+                        "--filename",
                         type=str,
                         help='target text')
 
-    parser.add_argument("--features",
+    parser.add_argument("--no-knp",
                         type=str,
-                        nargs='+',
-                        choices=[f.value for f in list(Features)],
-                        required=True,
-                        help='features to calculate')
+                        help='run without KNP')
 
     parser.add_argument("--delimiter",
                         type=str,
@@ -27,11 +27,14 @@ def main():
                         help='features to calculate')
 
     args = parser.parse_args()
-    features = list(map(lambda f: Features(f), args.features))
 
-    if Features.TREE_DEPTH in features:
-        syntax = Syntax(args.text, delimiter=args.delimiter)
-        print("Mean Tree Depth: {:02f}".format(syntax.calc_mean_tree_depth()))
+    text = ''
+    if args.filename is not None:
+        with open(args.filename, mode='r') as f:
+            text = f.read().replace('\n', '')
+    elif sys.stdin.isatty():
+        text = sys.stdin.read()
 
-    if Features.MODALITY in features:
-        pass
+    syntax = Syntax(text, delimiter=args.delimiter)
+    print("Number of Sentences: {:d}".format(syntax.n_sentences))
+    print("Mean Tree Depth: {:02f}".format(syntax.calc_mean_tree_depth()))
