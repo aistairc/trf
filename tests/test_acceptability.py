@@ -31,12 +31,20 @@ def parse_argument():
 
     return parser.parse_args()
 
-""" measures
+""" Acceptabilityの指標ツール管理
 """
 class Acceptability:
 
-    def __init__(self, std_input):
+    def __init__(self, std_input, vocab_file, input_sentence_file):
 
+        self.wordfreq_dic, self.totalwordcnt = self._make_wordfreq_dic(vocab_file)    # 学習データの語彙辞書を作成
+        self.input_sentence_list = self._load_input_sentence(input_sentence_file) # 入力文のリストを作成
+        self.lmscore = self._load_lmscore(std_input) # 言語モデルの尤度リストを作成
+
+    @staticmethod
+    def _load_lmscore(std_input):
+        """ RNN言語モデルの尤度を取得
+        """
         lmscore = []
         for line in std_input:
             line = line.strip()
@@ -44,16 +52,65 @@ class Acceptability:
                 lmscore.append(None)
             else:
                 lmscore.append(float(line))
+        return lmscore
 
-    def logprob(self, lmscore):
+    @staticmethod
+    def _make_wordfreq_dic(vocab_file):
+        """ 単語の頻出度辞書を作成
+        """
+        wordfreq_dic = {} # 単語の頻出度辞書
+        totalwordcnt = 0  # 学習コーパス中の合計単語数
+
+        with open(vocab_file, "r") as input:
+            for line in input:
+                line = line.strip()
+                tmp_cnt, word = line.split()
+                cnt = int(tmp_cnt)
+
+                if cnt > 1:
+                    wordfreq_dic[word] = cnt
+                else:
+                    wordfreq_dic["<unk>"] = wordfreq_dic.get("<unk>", 0) + 1
+
+                totalwordcnt += cnt
+
+        return wordfreq_dic, totalwordcnt
+
+    @staticmethod
+    def _load_input_sentence(input_sentence_file):
+        """ Acceptabilityを計算したいテキストを入力
+        """
+        with open(filename, "r") as input:
+            list_sentence = [line.rstrip() for line in input]
+
+        return list_sentence
+
+
+    def get_unilmscore(self, sentences, dict_words, total_word_cnt):
+        """ calcualte unigram probability of input sentence (ユニグラム言語モデルの尤度)
+        """
+
+        uni_list = []
+        for sen in sentences:
+            words = sen.split()
+            uniscore = 0
+            for word in words:
+                uniscore += math.log(float(dict_words.get(word, dict_words["<unk>"])) / float(total_word_cnt))
+            uni_list.append(uniscore)
+        return uni_list
+
+    def get_sentence_length(self, sentences):
+        """ calcualte length of input sentences (number of words for each sentence) (文長)
+        """
+        return [len(sen.strip().split()) for sen in sentences]
+
+    def get_logprob(self, lmscore):
         logprob_list = []
         for score in lmscore:
             logprob_list.append(score)
-
         return logprob_list
 
-
-    def meanlp(self, lmscore, sen_len):
+    def get_meanlp(self, lmscore, sen_len):
         meanlp_list = []
         for rnn, sen in zip(lmscore, sen_len):
             if rnn is not None:
@@ -64,7 +121,7 @@ class Acceptability:
 
         return meanlp_list
 
-    def normlp_div(self, lmscore, unilist):
+    def get_normlp_div(self, lmscore, unilist):
         normlp_div_list = []
         for rnn, uni in zip(lmscore, unilist):
             if rnn is not None:
@@ -75,7 +132,7 @@ class Acceptability:
 
         return normlp_div_list
 
-    def norlp_sub(self, lmscore, unilist):
+    def get_norlp_sub(self, lmscore, unilist):
         normlp_sub_list = []
         for rnn, uni in zip(lmscore, unilist):
             if rnn is not None:
@@ -86,7 +143,7 @@ class Acceptability:
 
         return normlp_sub_list
 
-    def slor(self, lmscore, unilist, sen_len):
+    def get_slor(self, lmscore, unilist, sen_len):
         slor_list = []
         for rnn, uni, sen in zip(lmscore, unilist, sen_len):
             if rnn is not None:
@@ -104,45 +161,6 @@ def read_key_file(filename):
         key_list = [line.rstrip() for line in input]
     return key_list
 
-def read_rnnlm_score(lines):
-    """ extract only language model scores from std_input
-    """
-    lmscore = []
-    for line in lines:
-        line = line.strip()
-        if line == "OOV":
-            lmscore.append(None)
-        else:
-            lmscore.append(float(line))
-    return lmscore
-
-
-def read_word(uniqdata):
-    d_words = {}
-    totalwordcnt = 0
-
-    with open(uniqdata, "r") as input:
-        for line in input:
-            line = line.strip()
-            tmp_cnt, word = line.split()
-            cnt = int(tmp_cnt)
-
-            if cnt > 1:
-                d_words[word] = cnt
-            else:
-                d_words["<unk>"] = d_words.get("<unk>", 0) + 1
-
-            totalwordcnt += cnt
-
-    return d_words, totalwordcnt
-
-def read_test_sentence(filename):
-
-    with open(filename, "r") as input:
-        list_sentence = [line.rstrip() for line in input]
-
-    return list_sentence
-
 def print_results(sentences, lp, mlp, nlpdiv, nlpsub, slr, lmscore, unilmscore):
 
     results = zip(sentences, lp, mlp, nlpdiv, nlpsub, slr, lmscore, unilmscore)
@@ -151,27 +169,6 @@ def print_results(sentences, lp, mlp, nlpdiv, nlpsub, slr, lmscore, unilmscore):
         print "RNNLMProb: {} UnigramProb: {} ".format(elmscore, eunilmscore)
         print "logprob: {} MeanLP: {} NormLP(Div): {} NormLP(Sub): {} SLOR: {} ".format(elp, emlp, enlpdiv, enlpsub, eslr)
         print " - - - - -"
-
-
-""" preprocessing
-"""
-def calc_unilmscore(sentences, dict_words, total_word_cnt):
-    """ calcualte unigram probability of input sentence
-    """
-
-    uni_list = []
-    for sen in sentences:
-        words = sen.split()
-        uniscore = 0
-        for word in words:
-            uniscore += math.log(float(dict_words.get(word, dict_words["<unk>"])) / float(total_word_cnt))
-        uni_list.append(uniscore)
-    return uni_list
-
-def get_sentence_length(sentences):
-    """ calcualte length of input sentences (number of words for each sentence)
-    """
-    return [len(sen.strip().split()) for sen in sentences]
 
 
 def print_results_with_csv(sentences,
