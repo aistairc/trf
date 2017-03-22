@@ -1,5 +1,7 @@
 import numpy as np
 
+from pyknp import KNP, Juman
+
 from trf.chunk import Chunk
 from trf.constant import DefaultOptions
 import trf.util as util
@@ -46,13 +48,9 @@ class Syntax(object):
         self.delimiter = delimiter
         self.sentences = util.split_text(self.text, delimiter)
         self.n_sentences = len(self.sentences)
-        try:
-            from pyknp import KNP
-            self.parser = KNP(option=DefaultOptions.KNP)
-            self.trees = self._trees()
-        except ImportError:
-            self.parser = None
-            self.trees = None
+        self.knp = KNP(option=DefaultOptions.KNP)
+        self.trees = self._trees()
+        self.juman = Juman()
 
     def _trees(self):
         """Analyse dependency structure using KNP
@@ -64,7 +62,7 @@ class Syntax(object):
 
         for sentence in self.sentences:
             chunks = []
-            for bnst in self.parser.parse(sentence).bnst_list():
+            for bnst in self.knp.parse(sentence).bnst_list():
                 chunk = Chunk(chunk_id=bnst.bnst_id,
                               link=bnst.parent_id,
                               description=bnst.fstring)
@@ -80,3 +78,10 @@ class Syntax(object):
             float: The mean depth of trees
         """
         return np.mean([tree.depth for tree in self.trees])
+
+    def calc_mean_sentence_length(self):
+        result = 0
+        for sentence in self.sentences:
+            juman_result = self.juman.analysis(sentence)
+            result += len(juman_result.mrph_list())
+        return result / self.n_sentences

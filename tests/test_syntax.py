@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from __future__ import unicode_literals
+from __future__ import division, unicode_literals
 
 import unittest
 import warnings
@@ -45,6 +45,14 @@ class TestSyntax(unittest.TestCase):
                         'エサを食べるネコを眺めた。'])
         syntax = Syntax(text, delimiter='。')
         self.assertAlmostEqual(syntax.calc_mean_tree_depth(), 2.0)
+
+    def test_mean_sentence_length(self):
+        # 宮澤賢治「銀河鉄道の夜」より
+        text = ("カムパネルラが手をあげました。"
+                "それから四、五人手をあげました。"
+                "ジョバンニも手をあげようとして、いそいでそのままやめました。")
+        syntax = Syntax(text, delimiter='。')
+        self.assertAlmostEqual(syntax.calc_mean_sentence_length(), 27 / 3)
 
 
 if __name__ == '__main__':
