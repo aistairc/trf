@@ -35,7 +35,7 @@ TRFは大きく分けて、`基本指標`、`語彙に基づく指標`、`統語
 現在サポートしている指標の一覧とその説明は、下記の通りです。
 
 *「語彙の難易度」および「語種」の算出には、[日本語教育語彙表](http://jhlee.sakura.ne.jp/JEV.html)を利用しています。TRFにおいて、「語彙の難易度」、「語種」の指標を利用する場合は、日本語教育語彙表の利用規約に従ってください。*
-*また、jReadabilityについても、[こちら]（http://jreadability.net/terms_of_use）に利用規約が記載されています。TRFにおいて、jReadability指標を利用する場合は、jReadabilityの利用規約に従ってください。*
+*また、jReadabilityについても、[こちら](http://jreadability.net/terms_of_use)に利用規約が記載されています。TRFにおいて、jReadability指標を利用する場合は、jReadabilityの利用規約に従ってください。*
 
 ### 基本指標
 
