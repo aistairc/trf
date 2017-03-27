@@ -54,6 +54,19 @@ class TestSyntax(unittest.TestCase):
         syntax = Syntax(text, delimiter='。')
         self.assertAlmostEqual(syntax.calc_mean_sentence_length(), 27 / 3)
 
+    def test_num_of_types(self):
+        text = ''.join(['ご飯を食べた。',
+                        '踊る人を見た。',
+                        'エサを食べるネコを眺めた。']) 
+        syntax = Syntax(text, delimiter='。')
+        self.assertEqual(syntax.calc_num_of_types(), 10)
+
+    def test_num_of_tokens(self):
+        text = ''.join(['ご飯を食べた。',
+                        '踊る人を見た。',
+                        'エサを食べるネコを眺めた。']) 
+        syntax = Syntax(text, delimiter='。')
+        self.assertEqual(syntax.calc_num_of_tokens(), 13) 
 
 if __name__ == '__main__':
     unittest.main()
