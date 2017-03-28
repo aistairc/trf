@@ -37,12 +37,16 @@ class Acceptability:
 
     def __init__(self, std_input, vocab_file, input_sentence_file):
 
-        self.wordfreq_dic, self.totalwordcnt = self._make_wordfreq_dic(vocab_file)# 学習データの語彙辞書を作成
-        self.input_sentence_list = self._load_input_sentence(input_sentence_file) # 入力文のリストを作成
-        self.lmscore = self._load_lmscore(std_input)                              # 言語モデルの尤度リストを作成
-        self.senlen_list = self._get_sentence_length(self.input_sentence_list)    # 入力文長リスト
-        self.unilmscore = self._get_unilmscore(self.input_sentence_list, self.wordfreq_dic, self.totalwordcnt) # ユニグラム言語モデルの尤度リストを作成
-
+        # 学習データの語彙辞書を作成
+        self.wordfreq_dic, self.totalwordcnt = self._make_wordfreq_dic(vocab_file)
+        # 入力文のリストを作成
+        self.input_sentence_list = self._load_input_sentence(input_sentence_file)
+        # 言語モデルの尤度リストを作成
+        self.lmscore = self._load_lmscore(std_input)
+        # 入力文長リスト
+        self.senlen_list = self._get_sentence_length(self.input_sentence_list)
+        # ユニグラム言語モデルの尤度リストを作成
+        self.unilmscore = self._get_unilmscore(self.input_sentence_list, self.wordfreq_dic, self.totalwordcnt)
 
     @staticmethod
     def _load_lmscore(std_input):
