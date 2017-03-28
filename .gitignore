@@ -2,3 +2,6 @@ __pycache__
 build
 trf.egg-info
 tests/faster-rnnlm
+tests/uniq.dat
+tests/test.input
+tests/rnnlm.output
