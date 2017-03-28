@@ -1,15 +1,18 @@
+# -*- coding: utf-8 -*-
 from __future__ import division, unicode_literals
-import os, sys
-from pathlib import Path
-print(Path().resolve().parent)
-sys.path.append(Path().resolve().parent)
-from acceptability import Acceptability
 
-def main():
+import unittest
+import warnings
 
-    accep = Acceptability("rnnlm.output", "uniq.dat", "test.input")
+class TestAcceptability(unittest.TestCase):
+
+    def setUp(self):
+        warnings.simplefilter('ignore', ResourceWarning)
+
+    def test_get_logprob(self):
+        accep = Acceptability('rnnlm.output', 'uniq.dat', 'test.input')
 
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    unittest.main()
