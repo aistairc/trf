@@ -87,7 +87,7 @@ class Syntax(object):
             pos += [mrph.hinsi for mrph in juman_result.mrph_list()]
         pos_counter = Counter(pos) 
         total = sum(pos_counter.values())
-        return {name: float(num)/total for name, num in pos.items()} 
+        return {name: float(num)/total for name, num in pos_counter.items()} 
 
     def calc_mean_tree_depth(self):
         """Calculate the mean depth of dependency tree

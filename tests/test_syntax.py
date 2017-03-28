@@ -16,8 +16,7 @@ class TestSyntax(unittest.TestCase):
         # Another solution is to write the following lines when you call KNP.
         # >> knp.subprocess.process.stdout.close()
         # >> knp.juman.subprocess.process.stdout.close()
-        #warnings.simplefilter('ignore', ResourceWarning)
-        pass
+        warnings.simplefilter('ignore', ResourceWarning)
 
     def test_n_sentences(self):
         text = ''.join(['ご飯を食べた。',
@@ -63,12 +62,12 @@ class TestSyntax(unittest.TestCase):
         syntax = Syntax(text, delimiter='。')
         self.assertEqual(syntax.calc_num_of_types(), 10)
 
-    def test_num_of_tokens(self):
+    def test_num_of_mrphs(self):
         text = ''.join(['ご飯を食べた。',
                         '踊る人を見た。',
                         'エサを食べるネコを眺めた。']) 
         syntax = Syntax(text, delimiter='。')
-        self.assertEqual(syntax.calc_num_of_tokens(), 13) 
+        self.assertEqual(syntax.calc_num_of_mrphs(), 13) 
 
     def test_ratio_of_pos(self):
         text = ''.join(['ご飯を食べた。',
@@ -76,7 +75,7 @@ class TestSyntax(unittest.TestCase):
                         'エサを食べるネコを眺めた。']) 
         syntax = Syntax(text, delimiter='。') 
 
-        for k, v in syntax.pos_rates().items():
+        for k, v in syntax.pos_rates.items():
             if k == "名詞":
                 noun = v
             elif k == "助詞":
