@@ -3,7 +3,7 @@ project := 'trf'
 .PHONY: test install uninstall
 
 test:
-	@python -m unittest -v
+	@python -m unittest discover -v
 
 install:
 	@pip install . --ignore-installed
