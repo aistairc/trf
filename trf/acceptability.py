@@ -35,30 +35,34 @@ def parse_argument():
 """
 class Acceptability:
 
-    def __init__(self, std_input, vocab_file, input_sentence_file):
+    def __init__(self,
+                 rnnlm_output_file,
+                 vocab_file,
+                 input_sentence_file):
 
         # 学習データの語彙辞書を作成
         self.wordfreq_dic, self.totalwordcnt = self._make_wordfreq_dic(vocab_file)
         # 入力文のリストを作成
         self.input_sentence_list = self._load_input_sentence(input_sentence_file)
         # 言語モデルの尤度リストを作成
-        self.lmscore = self._load_lmscore(std_input)
+        self.lmscore = self._load_lmscore(rnnlm_output_file)
         # 入力文長リスト
         self.senlen_list = self._get_sentence_length(self.input_sentence_list)
         # ユニグラム言語モデルの尤度リストを作成
         self.unilmscore = self._get_unilmscore(self.input_sentence_list, self.wordfreq_dic, self.totalwordcnt)
 
     @staticmethod
-    def _load_lmscore(std_input):
+    def _load_lmscore(rnnlm_output_file):
         """ RNN言語モデルの尤度を取得
         """
         lmscore = []
-        for line in std_input:
-            line = line.strip()
-            if line == "OOV":
-                lmscore.append(None)
-            else:
-                lmscore.append(float(line))
+        with open(rnnlm_output_file, "r") as f:
+            for line in f:
+                line = line.strip()
+                if line == "OOV":
+                    lmscore.append(None)
+                else:
+                    lmscore.append(float(line))
         return lmscore
 
     @staticmethod
