@@ -68,5 +68,23 @@ class TestSyntax(unittest.TestCase):
         syntax = Syntax(text, delimiter='。')
         self.assertEqual(syntax.calc_num_of_tokens(), 13) 
 
+    def test_ratio_of_pos(self):
+        text = ''.join(['ご飯を食べた。',
+                        '踊る人を見た。',
+                        'エサを食べるネコを眺めた。']) 
+        syntax = Syntax(text, delimiter='。') 
+
+        for k, v in syntax.pos_rates().items():
+            if k == "名詞":
+                noun = v
+            elif k == "助詞":
+                func = v
+            elif k == "動詞" :
+                verb = v
+
+        self.assertAlmostEqual(noun, 4.0 / 13)
+        self.assertAlmostEqual(func, 4.0 / 13) 
+        self.assertAlmostEqual(verb, 5.0 / 13)  
+
 if __name__ == '__main__':
     unittest.main()

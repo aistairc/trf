@@ -52,6 +52,7 @@ class Syntax(object):
         self.knp = KNP(option=DefaultOptions.KNP)
         self.trees = self._trees()
         self.juman = Juman()
+        self.pos_rates = self._pos_rates()
 
     def _trees(self):
         """Analyse dependency structure using KNP
@@ -72,6 +73,19 @@ class Syntax(object):
             results.append(Tree(sentence, chunks))
 
         return results
+
+    def _pos_rates(self):
+        """Calculate the ratio of each pos of words in input text
+        Returns:
+            float: the ratio of each pos of words in input text
+        """
+        pos = []
+        for sentence in self.sentences:
+            juman_result = self.juman.analysis(sentence)
+            pos += [mrph.hinsi for mrph in juman_result.mrph_list()]
+        pos_counter = Counter(pos) 
+        total = sum(pos_counter.values())
+        return {name: float(num)/total for name, num in pos.items()} 
 
     def calc_mean_tree_depth(self):
         """Calculate the mean depth of dependency tree
