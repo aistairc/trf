@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from __future__ import division, unicode_literals
 
@@ -15,7 +16,8 @@ class TestSyntax(unittest.TestCase):
         # Another solution is to write the following lines when you call KNP.
         # >> knp.subprocess.process.stdout.close()
         # >> knp.juman.subprocess.process.stdout.close()
-        warnings.simplefilter('ignore', ResourceWarning)
+        #warnings.simplefilter('ignore', ResourceWarning)
+        pass
 
     def test_n_sentences(self):
         text = ''.join(['ご飯を食べた。',
