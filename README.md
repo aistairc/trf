@@ -6,25 +6,28 @@ TRFは、与えられた日本語テキストに対して、種々の読みや�
 + Python 2.7+, 3.6+
 + Juman, KNP and pyknp
 
-## Installation
+## インストール
 
+```bash
+git clone https://github.com/aistairc/trf.git
+cd trf
+./install-dependencies.sh
+pip install .
+export PATH="${PATH}:$(pwd)/tools/bin"
 ```
-pip install trf
-```
 
-## Examples
+## 使用例
 
-### CLI mode 
-
-```
+テキストファイルを指定して実行する場合
+```bash
 trf -f <filename>
 ```
 
-### Library
+テキストを直接与えて実行する場合
+```bash
+echo 'ごはんを食べました。' | trf
+```
 
-```
-import trf
-```
 
 ## TRFがサポートする指標一覧
 TRFは大きく分けて、`基本指標`、`語彙に基づく指標`、`統語情報に基づく指標`、`言語モデルに基づく指標`の4種類をサポートしています。
