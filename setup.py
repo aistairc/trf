@@ -12,7 +12,6 @@ setup(name='trf',
       packages=find_packages(),
       install_requires=[
           "numpy",
-          "six",
-          "enum"
+          "six"
       ],
       entry_points={"console_scripts": ["trf = trf.cmdline:main"]})
