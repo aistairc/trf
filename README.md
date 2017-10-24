@@ -62,8 +62,15 @@ TRFは大きく分けて、`基本指標`、`語彙に基づく指標`、`統語
 | 容認度 | 各文の容認度スコアの平均 |   aligned    |  
 
 ## Reference
-本ツールについて、さらに詳細な情報が知りたい場合は、下記をご参照ください。
-(言語処理学会原稿)
+本ツールについて、さらに詳細な情報が知りたい場合は、
+「TRF: テキストの読みやすさ解析ツール」 [[PDF](http://www.anlp.jp/proceedings/annual_meeting/2017/pdf_dir/P6-6.pdf)] をご参照ください。
 
-## misc
-
+```tex
+@inproceedings{watanabe2017,
+  author={渡邉亮彦 and 村上聡一朗 and 宮澤彬 and 五島圭一 and 柳瀬利彦 and 高村大也 and 宮尾祐介},
+  title={{TRF}: テキストの読みやすさ解析ツール},
+  booktitle={言語処理学会第23回年次大会発表論文集},
+  year={2017},
+  pages={477--480}
+}
+```
