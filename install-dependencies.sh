@@ -30,7 +30,7 @@ then
     echo "KNP is installed"
 else
     mkdir -p tools/tmp
-    knp_archivearchivearchive="$(basename $knp_uri)"
+    knp_archive="$(basename $knp_uri)"
     wget --no-clobber $knp_uri -O "${tools}/tmp/${knp_archive}"
     tar -xkf "${tools}/tmp/${knp_archive}" -C "${tools}/tmp" > /dev/null 2>&1
     cd "${tools}/tmp/$(basename ${knp_archive} '.tar.bz2')"
