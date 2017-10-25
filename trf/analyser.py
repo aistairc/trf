@@ -1,8 +1,8 @@
-# coding=utf-8
-
-import numpy as np
+import re
+from typing import Dict
 from collections import Counter
 
+import numpy as np
 from pyknp import KNP, Juman
 
 from trf.chunk import Chunk
@@ -10,7 +10,7 @@ from trf.constant import DefaultOptions
 import trf.util as util
 
 
-class Tree(object):
+class Tree:
 
     def __init__(self, sentence, chunks):
         self.sentence = sentence
@@ -42,7 +42,7 @@ class Tree(object):
         return current_tree_depth
 
 
-class Syntax(object):
+class Analyser:
     """Class for syntactic Analysis
     """
 
@@ -55,6 +55,12 @@ class Syntax(object):
         self.trees = self._trees()
         self.juman = Juman()
         self.pos_rates = self._pos_rates()
+        self.n_mrphs = self.calc_num_of_mrphs()
+        self.n_types = self.calc_num_of_types()
+        self.mean_n_mrphs = None \
+            if self.n_sentences == 0 \
+            else self.n_mrphs / self.n_sentences
+        self.modality_rates = self.calc_modality_rates()
 
     def _trees(self):
         """Analyse dependency structure using KNP
@@ -85,9 +91,9 @@ class Syntax(object):
         for sentence in self.sentences:
             juman_result = self.juman.analysis(sentence)
             pos += [mrph.hinsi for mrph in juman_result.mrph_list()]
-        pos_counter = Counter(pos) 
+        pos_counter = Counter(pos)
         total = sum(pos_counter.values())
-        return {name: float(num)/total for name, num in pos_counter.items()} 
+        return {name: float(num)/total for name, num in pos_counter.items()}
 
     def calc_mean_tree_depth(self):
         """Calculate the mean depth of dependency tree
@@ -136,3 +142,23 @@ class Syntax(object):
             juman_result = self.juman.analysis(sentence)
             result += len(juman_result.mrph_list())
         return result
+
+    def calc_modality_rates(self) -> Dict[str, float]:
+
+        modality_counter = Counter()
+        for i, s in enumerate(self.sentences):
+            chunks = []
+            for bnst in self.knp.parse(s).bnst_list():
+                chunk = Chunk(chunk_id=bnst.bnst_id,
+                              link=bnst.parent,
+                              description=bnst.fstring)
+                chunks.append(chunk)
+
+            s = "".join([chunk.description for chunk in chunks])
+            ms = set(re.findall("<モダリティ-(.+?)>", s))
+            modality_counter += Counter(ms)
+
+            n = len(self.sentences)
+
+        return dict([(k, float(c) / n)
+                     for k, c in modality_counter.items()])

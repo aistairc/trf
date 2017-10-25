@@ -1,15 +1,12 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import division, unicode_literals
 
 import unittest
 import warnings
 
-from trf.syntax import Syntax
+from trf.analyser import Analyser
 
 
-class TestSyntax(unittest.TestCase):
+class TestAnalyser(unittest.TestCase):
 
     def setUp(self):
         # ``warnings='ignore'`` is used to suppress ``ResourceWarning``.
@@ -22,60 +19,60 @@ class TestSyntax(unittest.TestCase):
         text = ''.join(['ご飯を食べた。',
                         '踊る人を見た。',
                         'エサを食べるネコを眺めた。'])
-        syntax = Syntax(text, delimiter='。')
-        self.assertEqual(syntax.n_sentences, 3)
+        analyser = Analyser(text, delimiter='。')
+        self.assertEqual(analyser.n_sentences, 3)
 
     def test_depth(self):
 
         text = 'ご飯を食べた。'
-        syntax = Syntax(text, delimiter='。')
-        self.assertAlmostEqual(syntax.calc_mean_tree_depth(), 1.0)
+        analyser = Analyser(text, delimiter='。')
+        self.assertAlmostEqual(analyser.calc_mean_tree_depth(), 1.0)
 
         text = '踊る人を見た。'
-        syntax = Syntax(text, delimiter='。')
-        self.assertAlmostEqual(syntax.calc_mean_tree_depth(), 2.0)
+        analyser = Analyser(text, delimiter='。')
+        self.assertAlmostEqual(analyser.calc_mean_tree_depth(), 2.0)
 
         text = 'エサを食べるネコを眺めた。'
-        syntax = Syntax(text, delimiter='。')
-        self.assertAlmostEqual(syntax.calc_mean_tree_depth(), 3.0)
+        analyser = Analyser(text, delimiter='。')
+        self.assertAlmostEqual(analyser.calc_mean_tree_depth(), 3.0)
 
     def test_mean_depth(self):
 
         text = ''.join(['ご飯を食べた。',
                         '踊る人を見た。',
                         'エサを食べるネコを眺めた。'])
-        syntax = Syntax(text, delimiter='。')
-        self.assertAlmostEqual(syntax.calc_mean_tree_depth(), 2.0)
+        analyser = Analyser(text, delimiter='。')
+        self.assertAlmostEqual(analyser.calc_mean_tree_depth(), 2.0)
 
     def test_mean_sentence_length(self):
         # 宮澤賢治「銀河鉄道の夜」より
         text = ("カムパネルラが手をあげました。"
                 "それから四、五人手をあげました。"
                 "ジョバンニも手をあげようとして、いそいでそのままやめました。")
-        syntax = Syntax(text, delimiter='。')
-        self.assertAlmostEqual(syntax.calc_mean_sentence_length(), 27 / 3)
+        analyser = Analyser(text, delimiter='。')
+        self.assertAlmostEqual(analyser.calc_mean_sentence_length(), 27 / 3)
 
     def test_num_of_types(self):
         text = ''.join(['ご飯を食べた。',
                         '踊る人を見た。',
                         'エサを食べるネコを眺めた。'])
-        syntax = Syntax(text, delimiter='。')
-        self.assertEqual(syntax.calc_num_of_types(), 10)
+        analyser = Analyser(text, delimiter='。')
+        self.assertEqual(analyser.calc_num_of_types(), 10)
 
     def test_num_of_mrphs(self):
         text = ''.join(['ご飯を食べた。',
                         '踊る人を見た。',
                         'エサを食べるネコを眺めた。'])
-        syntax = Syntax(text, delimiter='。')
-        self.assertEqual(syntax.calc_num_of_mrphs(), 13)
+        analyser = Analyser(text, delimiter='。')
+        self.assertEqual(analyser.calc_num_of_mrphs(), 13)
 
     def test_ratio_of_pos(self):
         text = ''.join(['ご飯を食べた。',
                         '踊る人を見た。',
                         'エサを食べるネコを眺めた。'])
-        syntax = Syntax(text, delimiter='。')
+        analyser = Analyser(text, delimiter='。')
 
-        for k, v in syntax.pos_rates.items():
+        for k, v in analyser.pos_rates.items():
             if k == "名詞":
                 noun = v
             elif k == "助詞":
@@ -86,6 +83,24 @@ class TestSyntax(unittest.TestCase):
         self.assertAlmostEqual(noun, 4.0 / 13)
         self.assertAlmostEqual(func, 4.0 / 13)
         self.assertAlmostEqual(verb, 5.0 / 13)
+
+    def test_modality(self):
+
+        sentences = ['ご飯を食べるらしい。',
+                     'ご飯を食べるつもりだ。',
+                     'ご飯を食べるつもりだ。']
+        n = len(sentences)
+        text = ''.join(sentences)
+
+        analyser = Analyser(text, delimiter='。')
+        modal_counts = analyser.modality_rates
+
+        r_evidences = modal_counts['認識-証拠性']
+        r_dicisions = modal_counts['意志']
+
+        self.assertAlmostEqual(r_evidences, 1 / 3)
+        self.assertAlmostEqual(r_dicisions, 2 / 3)
+
 
 if __name__ == '__main__':
     unittest.main()

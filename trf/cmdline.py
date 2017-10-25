@@ -1,12 +1,59 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function, unicode_literals
-
 import sys
 import argparse
 import shutil
+from typing import List
 
-from trf.syntax import Syntax
+from trf.analyser import Analyser
+
+
+def translate(en: str):
+
+    if en == 'n_sentences':
+        return '文数'
+    elif en == 'mean_n_mrphs':
+        return '平均文長'
+    elif en == 'n_mrphs':
+        return 'トークン数'
+    elif en == 'n_types':
+        return 'タイプ数'
+    else:
+        return en
+
+
+class Metric:
+    def __init__(self, name: str, val: str):
+
+        self.name = name
+        self.val = val
+        self.name_ja = translate(name)
+
+    def __str__(self):
+        return '\t'.join([self.name_ja, self.val])
+
+
+class Section:
+
+    def __init__(self, cat: str, metrics: List[Metric]):
+
+        self.cat = cat
+        self.metrics = metrics
+        if cat == 'basic':
+            self.cat_ja = '基本指標'
+        elif cat == 'vocabulary':
+            self.cat_ja = '語彙に基づく指標'
+        elif cat == 'syntax':
+            self.cat_ja = '統語情報に基づく指標'
+        elif cat == 'language_model':
+            self.cat_ja = '言語モデルに基づく指標'
+
+    def show(self, lang: str='ja'):
+        if lang == 'ja':
+            print('[{}]'.format(self.cat_ja))
+            for metric in self.metrics:
+                print('{}={}'.format(metric.name_ja, metric.val))
+        else:
+            print('Unsupported language')
+            sys.exit(1)
 
 
 def check_executable(executable: str):
@@ -38,6 +85,11 @@ def main():
                         default='。',
                         help='features to calculate')
 
+    parser.add_argument("--output-lang",
+                        type=str,
+                        default='ja',
+                        help='ja')
+
     args = parser.parse_args()
 
     text = ''
@@ -47,25 +99,20 @@ def main():
     else:
         text = sys.stdin.read()
 
-    syntax = Syntax(text, delimiter=args.delimiter)
+    analyser = Analyser(text, delimiter=args.delimiter)
 
-    print("# 基本指標")
-    print("文数：{:d}".format(syntax.n_sentences))
-    print("平均文長：{:d}".format(syntax.n_sentences))
-    print("トークン数：{:d}".format(syntax.calc_num_of_mrphs()))
-    print("タイプ数：{:d}".format(syntax.calc_num_of_types()))
+    metrics = []
+    metrics.append(Metric('n_sentences', analyser.n_sentences))
+    metrics.append(Metric('mean_n_mrphs', analyser.mean_n_mrphs))
+    metrics.append(Metric('n_mrphs', analyser.n_mrphs))
+    metrics.append(Metric('n_types', analyser.n_types))
+    Section('basic', metrics).show()
 
-    print("")
-    print("# 語彙に基づく指標")
-    print("品詞：{:02f}".format(0))
-    print("語彙の具体度：{:02f}".format(0))
+    metrics = []
+    for k, v in analyser.modality_rates.items():
+        metrics.append(Metric('モダリティ：{}'.format(k), '{:.2f}'.format(v)))
+    Section('syntax', metrics).show()
 
-    print("")
-    print("# 統語情報に基づく指標")
-    print("仮定節：{:02f}".format(0))
-    print("係り受け木の深さ：{:02f}".format(syntax.calc_mean_tree_depth()))
 
-    print("")
-    print("# 言語モデルに基づく指標")
-    print("言語モデルの尤度：{:02f}".format(0))
-    print("容認度：{:02f}".format(0))
+if __name__ == '__main__':
+    main()

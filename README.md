@@ -4,7 +4,7 @@ TRFは、与えられた日本語テキストに対して、種々の読みや�
 ## Requirements
 
 + Python 2.7+, 3.6+
-+ Juman, KNP and pyknp
++ [Juman](http://nlp.ist.i.kyoto-u.ac.jp/index.php?JUMAN), [KNP](http://nlp.ist.i.kyoto-u.ac.jp/index.php?KNP) and [PyKNP](http://nlp.ist.i.kyoto-u.ac.jp/index.php?PyKNP)
 
 ## インストール
 
@@ -20,7 +20,7 @@ export PATH="${PATH}:$(pwd)/tools/bin"
 
 テキストファイルを指定して実行する場合
 ```bash
-trf -f <filename>
+trf -f FILENAME
 ```
 
 テキストを直接与えて実行する場合
