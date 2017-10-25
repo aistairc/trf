@@ -2,12 +2,13 @@ import re
 from typing import Dict
 from collections import Counter
 
-import numpy as np
+import numpy
 from pyknp import KNP, Juman
 from janome.tokenizer import Tokenizer
 
 from trf.chunk import Chunk
 from trf.constant import DefaultOptions
+import trf.wordnet as wordnet
 import trf.util as util
 
 
@@ -107,7 +108,7 @@ class Analyser:
         Returns:
             float: The mean depth of trees
         """
-        return np.mean([tree.depth for tree in self.trees])
+        return numpy.mean([tree.depth for tree in self.trees])
 
     def calc_mean_sentence_length(self) -> float:
         """Calculate the mean length (# of morphs) of sentences
@@ -190,3 +191,15 @@ class Analyser:
                     break
 
         return result
+
+    def calc_mean_thesaurus_depths(self) -> float:
+        # TODO: Share the parsing result
+        surfaces = []
+        tokenizer = Tokenizer()
+        for s in self.sentences:
+            for token in tokenizer.tokenize(s):
+                pos, pos1, _, _ = token.part_of_speech.split(',')
+                if pos == '名詞' and pos1 = '一般':
+                    surfaces.append(token.surface)
+
+        return wordnet.calc_mean_thesaurus_depths(surfaces)
