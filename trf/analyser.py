@@ -55,8 +55,9 @@ class Analyser:
         self.knp = KNP(option=DefaultOptions.KNP)
         self.trees = self._trees()
         self.juman = Juman()
-        self.pos_rates = self._pos_rates()
+        self.rs_pos = self.calc_rs_pos()
         self.n_mrphs = self.calc_n_mrphs()
+        self.n_chunks = self.calc_n_chunks()
         self.n_types = self.calc_n_types()
         self.mean_n_mrphs = None \
             if self.n_sentences == 0 \
@@ -87,18 +88,19 @@ class Analyser:
 
         return results
 
-    def _pos_rates(self):
+    def calc_rs_pos(self) -> Dict[str, float]:
         """Calculate the ratio of each pos of words in input text
         Returns:
             float: the ratio of each pos of words in input text
         """
         pos = []
+        # TODO: It may take a long time when the number of sentences are large
         for sentence in self.sentences:
             juman_result = self.juman.analysis(sentence)
             pos += [mrph.hinsi for mrph in juman_result.mrph_list()]
         pos_counter = Counter(pos)
         total = sum(pos_counter.values())
-        return {name: float(num)/total for name, num in pos_counter.items()}
+        return {name: float(num) / total for name, num in pos_counter.items()}
 
     def calc_mean_tree_depths(self) -> float:
         """Calculate the mean depth of dependency tree
@@ -147,6 +149,11 @@ class Analyser:
             juman_result = self.juman.analysis(sentence)
             n_mrphs += len(juman_result.mrph_list())
         return n_mrphs
+
+    def calc_n_chunks(self) -> int:
+        # TODO: 共通化
+        return sum([len(self.knp.parse(s).bnst_list())
+                    for s in self.sentences])
 
     def calc_rs_modality(self) -> Dict[str, float]:
 

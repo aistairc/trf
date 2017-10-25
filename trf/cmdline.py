@@ -12,7 +12,7 @@ def translate(en: str):
         return '文数'
     elif en == 'mean_n_mrphs':
         return '平均文長'
-    elif en == 'n_mrphs':
+    elif en == 'n_chunks':
         return 'トークン数'
     elif en == 'n_types':
         return 'タイプ数'
@@ -108,9 +108,15 @@ def main():
     metrics = []
     metrics.append(Metric('n_sentences', analyser.n_sentences))
     metrics.append(Metric('mean_n_mrphs', analyser.mean_n_mrphs))
-    metrics.append(Metric('n_mrphs', analyser.n_mrphs))
+    metrics.append(Metric('n_tokens', analyser.n_chunks))
     metrics.append(Metric('n_types', analyser.n_types))
     Section('basic', metrics).show()
+
+    metrics = []
+    for k, v in analyser.rs_pos.items():
+        metrics.append(Metric('品詞：{}'.format(k),
+                              '{:.2f}'.format(v)))
+    Section('vocabulary', metrics).show()
 
     metrics = []
     metrics.append(Metric('mean_tree_depths',

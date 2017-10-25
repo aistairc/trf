@@ -59,6 +59,12 @@ class TestAnalyser(unittest.TestCase):
         analyser = Analyser(text, delimiter='。')
         self.assertEqual(analyser.n_types, 10)
 
+    def test_n_chunks(self):
+        text = ''.join(['ご飯を食べた。',
+                        '人を見た。'])
+        analyser = Analyser(text, delimiter='。')
+        self.assertEqual(analyser.n_chunks, 4)
+
     def test_n_mrphs(self):
         text = ''.join(['ご飯を食べた。',
                         '踊る人を見た。',
@@ -66,13 +72,13 @@ class TestAnalyser(unittest.TestCase):
         analyser = Analyser(text, delimiter='。')
         self.assertEqual(analyser.n_mrphs, 13)
 
-    def test_ratio_of_pos(self):
+    def test_rs_pos(self):
         text = ''.join(['ご飯を食べた。',
                         '踊る人を見た。',
                         'エサを食べるネコを眺めた。'])
         analyser = Analyser(text, delimiter='。')
 
-        for k, v in analyser.pos_rates.items():
+        for k, v in analyser.rs_pos.items():
             if k == "名詞":
                 noun = v
             elif k == "助詞":
