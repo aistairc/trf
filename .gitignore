@@ -8,3 +8,4 @@ tests/rnnlm.output
 tests/__init__.pyc
 tests/test_acceptability.pyc
 tools
+data
