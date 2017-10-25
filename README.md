@@ -3,7 +3,7 @@ TRFは、与えられた日本語テキストに対して、種々の読みや�
 
 ## Requirements
 
-+ Python 2.7+, 3.6+
++ Python 3.6+
 + [Juman](http://nlp.ist.i.kyoto-u.ac.jp/index.php?JUMAN), [KNP](http://nlp.ist.i.kyoto-u.ac.jp/index.php?KNP) and [PyKNP](http://nlp.ist.i.kyoto-u.ac.jp/index.php?PyKNP)
 
 ## インストール
@@ -12,6 +12,7 @@ TRFは、与えられた日本語テキストに対して、種々の読みや�
 git clone https://github.com/aistairc/trf.git
 cd trf
 ./install-dependencies.sh
+./download-resources.sh
 pip install .
 export PATH="${PATH}:$(pwd)/tools/bin"
 ```
