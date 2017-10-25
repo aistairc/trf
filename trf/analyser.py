@@ -4,6 +4,7 @@ from collections import Counter
 
 import numpy as np
 from pyknp import KNP, Juman
+from janome.tokenizer import Tokenizer
 
 from trf.chunk import Chunk
 from trf.constant import DefaultOptions
@@ -55,12 +56,16 @@ class Analyser:
         self.trees = self._trees()
         self.juman = Juman()
         self.pos_rates = self._pos_rates()
-        self.n_mrphs = self.calc_num_of_mrphs()
-        self.n_types = self.calc_num_of_types()
+        self.n_mrphs = self.calc_n_mrphs()
+        self.n_types = self.calc_n_types()
         self.mean_n_mrphs = None \
             if self.n_sentences == 0 \
             else self.n_mrphs / self.n_sentences
-        self.modality_rates = self.calc_modality_rates()
+        self.rs_modality = self.calc_rs_modality()
+        self.r_conditional = None \
+            if self.n_sentences == 0 \
+            else self.calc_n_conditionals() / self.n_sentences
+        self.mean_tree_depths = self.calc_mean_tree_depths()
 
     def _trees(self):
         """Analyse dependency structure using KNP
@@ -95,14 +100,14 @@ class Analyser:
         total = sum(pos_counter.values())
         return {name: float(num)/total for name, num in pos_counter.items()}
 
-    def calc_mean_tree_depth(self):
+    def calc_mean_tree_depths(self) -> float:
         """Calculate the mean depth of dependency tree
         Returns:
             float: The mean depth of trees
         """
         return np.mean([tree.depth for tree in self.trees])
 
-    def calc_mean_sentence_length(self):
+    def calc_mean_sentence_length(self) -> float:
         """Calculate the mean length (# of morphs) of sentences
         Returns:
             float: the mean length of sentences
@@ -113,14 +118,14 @@ class Analyser:
             result += len(juman_result.mrph_list())
         return result / self.n_sentences
 
-    def calc_num_of_sentences(self):
+    def calc_n_sentences(self) -> int:
         """Calculate the number of sentences of input text
         Returns:
             int: the number of sentences of input text splitted by delimiter (default '。')
         """
         return self.n_sentences
 
-    def calc_num_of_types(self):
+    def calc_n_types(self) -> int:
         """Calculate the number of types of input text
         Returns:
             int: the number of types of input text
@@ -132,18 +137,18 @@ class Analyser:
         word_type_counter = Counter(surfaces)
         return len(word_type_counter)
 
-    def calc_num_of_mrphs(self):
+    def calc_n_mrphs(self) -> int:
         """Calculate the number of morphemes of input text
         Returns:
             int: the number of morphemes of input text
         """
-        result = 0
+        n_mrphs = 0
         for sentence in self.sentences:
             juman_result = self.juman.analysis(sentence)
-            result += len(juman_result.mrph_list())
-        return result
+            n_mrphs += len(juman_result.mrph_list())
+        return n_mrphs
 
-    def calc_modality_rates(self) -> Dict[str, float]:
+    def calc_rs_modality(self) -> Dict[str, float]:
 
         modality_counter = Counter()
         for i, s in enumerate(self.sentences):
@@ -162,3 +167,19 @@ class Analyser:
 
         return dict([(k, float(c) / n)
                      for k, c in modality_counter.items()])
+
+    def calc_n_conditionals(self) -> int:
+        """
+        Returns:
+            int: the number of sentences that contains one or more conditional clauses
+        """
+        result = 0
+
+        tokenizer = Tokenizer()
+        for s in self.sentences:
+            for token in tokenizer.tokenize(s):
+                if token.infl_form == '仮定形':
+                    result += 1
+                    break
+
+        return result

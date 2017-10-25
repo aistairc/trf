@@ -12,6 +12,6 @@ setup(name='trf',
       packages=find_packages(),
       install_requires=[
           "numpy",
-          "six"
+          "janome"
       ],
       entry_points={"console_scripts": ["trf = trf.cmdline:main"]})

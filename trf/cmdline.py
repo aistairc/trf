@@ -16,6 +16,10 @@ def translate(en: str):
         return 'トークン数'
     elif en == 'n_types':
         return 'タイプ数'
+    elif en == 'mean_tree_depths':
+        return '係り受け木の深さ'
+    elif en == 'r_conditional':
+        return '仮定節'
     else:
         return en
 
@@ -109,8 +113,13 @@ def main():
     Section('basic', metrics).show()
 
     metrics = []
-    for k, v in analyser.modality_rates.items():
-        metrics.append(Metric('モダリティ：{}'.format(k), '{:.2f}'.format(v)))
+    metrics.append(Metric('mean_tree_depths',
+                          '{:.2f}'.format(analyser.mean_tree_depths)))
+    metrics.append(Metric('r_conditional',
+                          '{:.2f}'.format(analyser.r_conditional)))
+    for k, v in analyser.rs_modality.items():
+        metrics.append(Metric('モダリティ：{}'.format(k),
+                              '{:.2f}'.format(v)))
     Section('syntax', metrics).show()
 
 
