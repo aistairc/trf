@@ -9,4 +9,4 @@ def split_text(text, delimiter='\n'):
     Returns:
         list(str)
     """
-    return [s.strip() for s in text.split(delimiter) if len(s) > 0]
+    return [s.strip() for s in text.split(delimiter) if len(s.strip()) > 0]
