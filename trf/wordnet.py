@@ -1,172 +1,110 @@
-#!/usr/bin/env python2.6
-# encoding: utf-8
-
+from typing import List
 import sys
-import sqlite3
-from collections import namedtuple
-import MeCab
 import numpy as np
 
-"""
-link
-  syns - Synonyms
-  hype - Hypernyms
-  inst - Instances
-  hypo - Hyponym
-  hasi - Has Instance
-  mero - Meronyms
-  mmem - Meronyms --- Member
-  msub - Meronyms --- Substance
-  mprt - Meronyms --- Part
-  holo - Holonyms
-  hmem - Holonyms --- Member
-  hsub - Holonyms --- Substance
-  hprt - Holonyms -- Part
-  attr - Attributes
-  sim - Similar to
-  entag - Entails
-  causg - Causes
-  dmncg - Domain --- Category
-  dmnug - Domain --- Usage
-  dmnrg - Domain --- Region
-  dmtcg - In Domain --- Category
-  dmtug - In Domain --- Usage
-  dmtrg - In Domain --- Region
-  antsg - Antonyms
+from sqlalchemy import Column, String, Integer, and_
+from sqlalchemy.engine import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm.session import Session, sessionmaker
 
-lang (default: jpn)
-  jpn - Japanese
-  eng - English
-"""
+from trf.constant import HYPERNYM
+
+
+Base = declarative_base()
+
+
+class Word(Base):
+
+    __tablename__ = 'word'
+
+    wordid = Column(String, primary_key=True)
+    lang = Column(String)
+    lemma = Column(String)
+    pron = Column(String)
+    pos = Column(String)
+
+
+class Sense(Base):
+
+    __tablename__ = 'sense'
+
+    synset = Column(String, primary_key=True)
+    wordid = Column(Integer, primary_key=True)
+    lang = Column(String)
+    rank = Column(String)
+    lexid = Column(Integer)
+    freq = Column(Integer)
+    src = Column(String)
+
+
+class Synlink(Base):
+
+    __tablename__ = 'synlink'
+
+    synset1 = Column(String, primary_key=True)
+    synset2 = Column(String)
+    link = Column(String, primary_key=True)
+    src = Column(String)
+
 
 class WordNet:
 
+    def __init__(self, db_path: str, lang: str):
 
-    def __init__(self):
-        self.conn = sqlite3.connect("./lib/wnjpn-1.1.db")
-        self.Word = namedtuple('Word', 'wordid lang lemma pron pos')
-        self.Sense = namedtuple('Sense', 'synset wordid lang rank lexid freq src')
-        self.Synset = namedtuple('Synset', 'synset pos name src')
-        self.SynLink = namedtuple('SynLink', 'synset1 synset2 link src')
+        engine = create_engine('sqlite:///{}'.format(db_path))
+        SessionMaker = sessionmaker(bind=engine)
+        self.session = SessionMaker()
+        self.lang = lang
 
-    def __getWords(self, lemma):
-      cur = self.conn.execute("select * from word where lemma=?", (lemma,))
-      return [self.Word(*row) for row in cur]
+    def traverse(self, senses: List[Sense], depth: int) -> int:
 
-    def __getWord(self, wordid):
-      cur = self.conn.execute("select * from word where wordid=?", (wordid,))
-      return self.Word(*cur.fetchone())
+        if senses:
+            synsets = [sense.synset for sense in senses]
+            synlinks = self.session \
+                .query(Synlink) \
+                .filter(and_(Synlink.synset1.in_(synsets),
+                             Synlink.link == HYPERNYM)) \
+                .all()
+            if synlinks:
+                synset2s = [synlink.synset2 for synlink in synlinks]
+                child_senses = self.session \
+                    .query(Sense) \
+                    .filter(and_(Sense.synset.in_(synset2s),
+                                 Sense.lang == self.lang)) \
+                    .all()
+                return self.traverse(child_senses, depth + 1)
+            else:
+                return depth
+        else:
+            return depth
 
-
-    def __getSenses(self, word):
-      cur = self.conn.execute("select * from sense where wordid=?", (word.wordid,))
-      return [self.Sense(*row) for row in cur]
-
-    def __getSense(self, synset, lang='jpn'):
-      cur = self.conn.execute("select * from sense where synset=? and lang=?",
-                         (synset,lang))
-      row = cur.fetchone()
-      return row and self.Sense(*row) or None
-
-    def __getSynset(self, synset):
-      cur = self.conn.execute("select * from synset where synset=?", (synset,))
-      return self.Synset(*cur.fetchone())
-
-    def __getSynLinks(self, sense, link):
-      cur = self.conn.execute("select * from synlink where synset1=? and link=?",
-                         (sense.synset, link))
-      return [self.SynLink(*row) for row in cur]
-
-    def __getSynLinksRecursive(self, senses, link, depth_list, lang='jpn', _depth=0):
-
-        for sense in senses:
-            synLinks = self.__getSynLinks(sense, link)
-
-            if synLinks:
-                """
-                print ' '.join([' '*2*_depth,
-                                getWord(sense.wordid).lemma,
-                                getSynset(sense.synset).name,
-                                    str(_depth)])
-                """
-                depth_list.append(_depth)
-
-            _senses = []
-            for synLink in synLinks:
-                sense = self.__getSense(synLink.synset2, lang)
-                if sense:
-                    _senses.append(sense)
-
-            self.__getSynLinksRecursive(_senses, link, depth_list, lang, _depth+1)
-
-        if _depth == 0:
-            return depth_list if depth_list else [0] # リンクが無い単語はdepth list=[0]として返す
-
-    def load_file(self, fname):
-        dataset = []
-        with open(fname, "r") as f:
-            next(f) # ignore csv head
-            for line in f:
-                row = line.strip().split("\t")
-                dataset.append(row)
-        return dataset
-
-    def wakati_text(self, text):
-        """ テキストから一般名詞だけを取り出す
+    def calc_mean_thesaurus_depths(self, surfaces: List[str]) -> float:
         """
-        m = MeCab.Tagger("-Ochasen")
-        surface_list = []
-        node = m.parseToNode(text)
-        while node:
-            feature = node.feature.split(",")
-            pos = feature[0]
-            pos_type = feature[1]
-            if pos == "名詞" and pos_type == "一般":
-                surface_list.append(node.surface)
-            node = node.next
-        return surface_list
-
-    def get_average_thesaurus_depth(self, surface_list):
-        """ シソーラスの深さを取得
-            Parameters:
-                surface_list : 分析対象のテキスト中の単語リスト(一般名詞のみ)
+        Parameters:
+            session
+            surface_list: 分析対象のテキスト中の単語リスト(一般名詞のみ)
         """
-        max_depth_list = []
-        for surface in surface_list:
-            #print "- - - - - - - - - - - "
-            words = self.__getWords(surface.decode('utf-8'))
-            #print "surface:", surface
-            if words:
-                sense = self.__getSenses(words[0])
-                #print "words[0]:", words[0]
-                #print "sense:", sense
-                #print "len(sys.argv):", len(sys.argv)
-                #link = len(sys.argv)>=3 and sys.argv[2] or 'hypo'
-                #lang = len(sys.argv)==4 and sys.argv[3] or 'jpn'
 
-                link = 'hype'
-                lang = 'jpn'
-                depth_list = self.__getSynLinksRecursive(sense, link, [], lang, _depth=0)
-                max_depth = max(depth_list)
-                #print "max_depth:", max_depth
+        if surfaces is None or len(surfaces) == 0:
+            return 0.0
 
-                if max_depth != 0:
-                    max_depth_list.append(max_depth)
-                    #print ",".join([surface, str(max_depth)])
+        depths = []
+        for surface in surfaces:
+
+            word = self.session \
+                .query(Word) \
+                .filter(Word.lemma == surface) \
+                .first()
+
+            if word:
+                senses = self.session \
+                    .query(Sense) \
+                    .filter(Sense.wordid == word.wordid) \
+                    .all()
+
+                depth = self.traverse(senses, 0)
+                depths.append(depth)
             else:
                 continue
 
-        if max_depth_list:
-            return np.mean(max_depth_list)
-        else:
-            return "NA"
-
-if __name__ == '__main__':
-
-    wn = WordNet()
-
-    dataset = wn.load_file(sys.argv[1])
-    for (code, date, text) in dataset:
-        surface_list = wn.wakati_text(text)
-        print wn.get_average_thesaurus_depth(surface_list)
-        #exit()
+        return np.mean(depths) if depths else 0.0

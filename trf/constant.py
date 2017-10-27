@@ -8,3 +8,6 @@ class Features(Enum):
 
 class DefaultOptions(object):
     KNP = "-dpnd-fast -tab"
+
+
+HYPERNYM = 'hype'

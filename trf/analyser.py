@@ -199,7 +199,7 @@ class Analyser:
         for s in self.sentences:
             for token in tokenizer.tokenize(s):
                 pos, pos1, _, _ = token.part_of_speech.split(',')
-                if pos == '名詞' and pos1 = '一般':
+                if pos == '名詞' and pos1 == '一般':
                     surfaces.append(token.surface)
 
         return wordnet.calc_mean_thesaurus_depths(surfaces)
