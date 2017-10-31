@@ -4,6 +4,7 @@ import shutil
 from typing import List
 
 from trf.analyser import Analyser
+from trf.acceptability import Acceptability
 
 
 def translate(en: str):
@@ -126,6 +127,20 @@ def main():
     for k, v in analyser.rs_modality.items():
         metrics.append(Metric('モダリティ：{}'.format(k),
                               '{:.2f}'.format(v)))
+    Section('syntax', metrics).show()
+
+    acceptability = Acceptability(text)
+    metrics = []
+    metrics.append(Metric('unigram_lm_score',
+                          '{:.2f}'.format(acceptability.unigram_lm_scores)))
+    metrics.append(Metric('mean_unigram_lm_score',
+                          '{:.2f}'.format(acceptability.mean_unigram_lm_scores)))
+    metrics.append(Metric('normalized_lm_score (division)',
+                          '{:.2f}'.format(acceptability.lm_scores_normalized_by_div)))
+    metrics.append(Metric('normalized_lm_score (subtraction)',
+                          '{:.2f}'.format(acceptability.lm_scores_normalized_by_sub)))
+    metrics.append(Metric('normalized_lm_score (subtraction)',
+                          '{:.2f}'.format(acceptability.lm_scores_normalized_by_len)))
     Section('syntax', metrics).show()
 
 
