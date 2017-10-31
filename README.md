@@ -12,23 +12,21 @@ TRFは、与えられた日本語テキストに対して、種々の読みや�
 git clone https://github.com/aistairc/trf.git
 cd trf
 ./install-dependencies.sh
-./download-resources.sh
 pip install .
 export PATH="${PATH}:$(pwd)/tools/bin"
 ```
 
 ## 使用例
 
+テキストを直接与えて実行する場合
+```bash
+echo 'ごはんを食べるつもりです。' | trf
+```
+
 テキストファイルを指定して実行する場合
 ```bash
 trf -f FILENAME
 ```
-
-テキストを直接与えて実行する場合
-```bash
-echo 'ごはんを食べました。' | trf
-```
-
 
 ## TRFがサポートする指標一覧
 TRFは大きく分けて、`基本指標`、`語彙に基づく指標`、`統語情報に基づく指標`、`言語モデルに基づく指標`の4種類をサポートしています。

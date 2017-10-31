@@ -10,7 +10,6 @@ exists() {
     command -v "$1" > /dev/null 2>&1
 }
 
-
 export PATH="$PATH:${tools}/bin"
 
 if exists juman
@@ -51,4 +50,22 @@ else
     wget --no-clobber $pyknp_uri -O "${tools}/tmp/${pyknp_archive}"
     tar -xkf "${tools}/tmp/${pyknp_archive}" -C "${tools}/tmp" > /dev/null 2>&1
     pip install "${tools}/tmp/$(basename ${pyknp_archive} '.tar.gz')"
+fi
+
+jwordnet="http://compling.hss.ntu.edu.sg/wnja/data/1.1/wnjpn.db.gz"
+db="$(basename $jwordnet)"
+
+if [ ! -d data ]
+then
+    mkdir data
+fi
+
+if [ ! -f "data/$db" ]
+then
+    wget -O data/$db $jwordnet
+fi
+
+if [ ! -f "data/${db%.*}" ]
+then
+    gunzip --keep "data/${db%.*}"
 fi
