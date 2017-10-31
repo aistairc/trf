@@ -13,7 +13,7 @@ def translate(en: str):
         return '文数'
     elif en == 'mean_n_mrphs':
         return '平均文長'
-    elif en == 'n_chunks':
+    elif en == 'n_tokens':
         return 'トークン数'
     elif en == 'n_types':
         return 'タイプ数'
