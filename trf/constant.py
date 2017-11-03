@@ -11,3 +11,4 @@ class DefaultOptions(object):
 
 
 HYPERNYM = 'hype'
+OUT_OF_VOCABULARY = "OOV"

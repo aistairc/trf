@@ -69,3 +69,19 @@ if [ ! -f "data/${db%.*}" ]
 then
     gunzip --keep "data/${db%.*}"
 fi
+
+project_root="$(pwd)"
+if exists rnnlm
+then
+    echo "RNNLM is installed"
+else
+    if [ ! -d ${tools}/tmp/faster-rnnlm ]
+    then
+         git clone https://github.com/yandex/faster-rnnlm.git ${tools}/tmp/faster-rnnlm
+    fi
+    cd ${tools}/tmp/faster-rnnlm/faster-rnnlm
+    sed -i.bak -e 's/^\s*NVCC_CFLAGS = -O3 -march=native -funroll-loops$/NVCC_CFLAGS = -O3 -march=native -funroll-loops -D_FORCE_INLINES/' Makefile
+    make
+    cd $project_root
+    ln -sf ${tools}/tmp/faster-rnnlm/faster-rnnlm/rnnlm tools/bin/rnnlm
+fi

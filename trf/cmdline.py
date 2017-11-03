@@ -1,10 +1,10 @@
 import sys
 import argparse
-import shutil
 from typing import List
 
 from trf.analyser import Analyser
 from trf.acceptability import Acceptability
+from trf.util import check_executable
 
 
 def translate(en: str):
@@ -60,21 +60,9 @@ class Section:
             print('Unsupported language')
             sys.exit(1)
 
-
-def check_executable(executable: str):
-    location = shutil.which(executable)
-    if location is None:
-        print('`{0}` is not found on your PATH.\n'
-              'Make sure that `{0}` is installed on your system '
-              'and available on the PATH.'.format(executable))
-        sys.exit(1)
-    else:
-        pass
-
-
 def main():
 
-    executables = ['juman', 'knp']
+    executables = ['juman', 'knp', 'rnnlm']
     for e in executables:
         check_executable(e)
 
@@ -131,16 +119,16 @@ def main():
 
     acceptability = Acceptability(text)
     metrics = []
-    metrics.append(Metric('unigram_lm_score',
-                          '{:.2f}'.format(acceptability.unigram_lm_scores)))
-    metrics.append(Metric('mean_unigram_lm_score',
-                          '{:.2f}'.format(acceptability.mean_unigram_lm_scores)))
-    metrics.append(Metric('normalized_lm_score (division)',
-                          '{:.2f}'.format(acceptability.lm_scores_normalized_by_div)))
-    metrics.append(Metric('normalized_lm_score (subtraction)',
-                          '{:.2f}'.format(acceptability.lm_scores_normalized_by_sub)))
-    metrics.append(Metric('normalized_lm_score (subtraction)',
-                          '{:.2f}'.format(acceptability.lm_scores_normalized_by_len)))
+    metrics.append(Metric('unigram_score',
+                          '{:.2f}'.format(acceptability.unigram_scores)))
+    metrics.append(Metric('mean_unigram_score',
+                          '{:.2f}'.format(acceptability.mean_unigram_scores)))
+    metrics.append(Metric('normalized_score (division)',
+                          '{:.2f}'.format(acceptability.normalized_scores_div)))
+    metrics.append(Metric('normalized_score (subtraction)',
+                          '{:.2f}'.format(acceptability.normalized_scores_sub)))
+    metrics.append(Metric('normalized_score (subtraction)',
+                          '{:.2f}'.format(acceptability.normalized_scores_len)))
     Section('syntax', metrics).show()
 
 

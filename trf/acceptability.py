@@ -1,59 +1,80 @@
+import errno
+import os
 from typing import Dict, List, Tuple, Union
+import tempfile
+from subprocess import Popen, PIPE
 import math
 import numpy
+
+import trf.constant as const
 
 
 class Acceptability:
 
-    def __init__(self,
-                 text: str,
-                 rnnlm_output_filename: str,
-                 wordfreq_filename: str):
+    def __init__(self, text: str, rnnlm_model_path: str):
 
-        self.lm_scores = self._load_lm_scores(rnnlm_output_filename)
-
-        self.word_freq, self.n_total_words = \
-            self._load_word_freq(wordfreq_filename, threshold=1)
-
+        self.text = text
         self.sentences = [s.strip() for s in text.split('\n')
                           if s.strip() != '']
 
-        self.unigram_lm_scores = self.calc_unigram_lm_scores()
+        if not os.path.isfile(rnnlm_model_path):
+            raise FileNotFoundError(errno.ENOENT,
+                                    os.strerror(errno.ENOENT),
+                                    rnnlm_model_path)
+        self.rnnlm_model_path = rnnlm_model_path
 
-        self.mean_unigram_lm_scores = self.calc_mean_unigram_lm_scores()
+        self.word_freq, self.n_total_words = self._load_word_freq(threshold=1)
 
-        self.lm_scores_normalized_by_div = \
-            self.calc_lm_scores_normalized_by_div()
+        self.rnnlm_scores = self.get_rnnlm_scores()
+        self.unigram_scores = self.calc_unigram_scores()
 
-        self.lm_scores_normalized_by_sub = \
-            self.calc_lm_scores_normalized_by_sub()
+        self.mean_unigram_scores = self.calc_mean_unigram_scores()
 
-        self.lm_scores_normalized_by_len = \
-            self.calc_lm_scores_normalized_by_len()
+        self.normalized_scores_div = \
+            self.calc_normalized_scores('div')
 
-    @staticmethod
-    def _load_lm_scores(rnnlm_output_filename: str) -> List[Union[None, float]]:
+        self.normalized_scores_sub = \
+            self.calc_normalized_scores('sub')
+
+        self.normalized_scores_len = \
+            self.calc_normalized_scores('len')
+
+    def get_rnnlm_scores(self) -> List[Union[None, float]]:
+        """Get log likelihood scores by calling RNNLM
+        """
+
+        textfile = tempfile.NamedTemporaryFile(delete=True)
+        textfile.write(str.encode(self.text))
+        textfile.seek(0)
+
+        command = ['rnnlm', '-rnnlm', self.rnnlm_model_path,
+                   '-test', textfile.name]
+        process = Popen(command, stdout=PIPE, stderr=PIPE)
+        output , _ = process.communicate()
+        lines = [line.strip() for line in output.decode('UTF-8').split('\n')
+                 if line.strip() != '']
         scores = []
-        with open(rnnlm_output_filename, mode='r') as f:
-            for line in f:
-                line = line.strip()
-                if line == "OOV":
-                    scores.append(None)
-                else:
-                    scores.append(float(line))
+        for line in lines:
+            if line == const.OUT_OF_VOCABULARY:
+                scores.append(None)
+            else:
+                try:
+                    score = float(line)
+                    scores.append(score)
+                except ValueError:
+                    pass
+        textfile.close()
         return scores
 
-    @staticmethod
-    def _load_word_freq(filename: str,
-                        threshold: int) -> Tuple[Dict[str, int], int]:
+    def _load_word_freq(self, threshold: int) -> Tuple[Dict[str, int], int]:
         n_total_words = 0
         word_freq = {}
-        with open(filename, mode='r') as f:
+        with open(self.rnnlm_model_path, mode='r') as f:
             for line in f:
 
                 n_total_words += 1
 
-                freq, word = line.strip().split()
+                word, freq = line.split(' ')
                 freq = int(freq)
                 if freq > threshold:
                     word_freq[word] = freq
@@ -62,7 +83,7 @@ class Acceptability:
 
         return (word_freq, n_total_words)
 
-    def calc_unigram_lm_scores(self) -> List[float]:
+    def calc_unigram_scores(self) -> List[float]:
 
         unigram_scores = []
         for s in self.sentences:
@@ -77,46 +98,37 @@ class Acceptability:
 
         return unigram_scores
 
-    def calc_mean_unigram_lm_scores(self) -> List[Union[None, float]]:
-        mean_unigram_lm_scores = []
-        for score, sentence in zip(self.unigram_lm_scores, self.sentences):
+    def calc_mean_unigram_scores(self) -> List[Union[None, float]]:
+        mean_unigram_scores = []
+        for score, sentence in zip(self.unigram_scores, self.sentences):
             n = len(self.sentences)
             x = None \
                 if score is None or n == 0 \
                 else float(score) / float(len(self.sentences))
-            mean_unigram_lm_scores.append(x)
-        return mean_unigram_lm_scores
+            mean_unigram_scores.append(x)
+        return mean_unigram_scores
 
-    def calc_lm_scores_normalized_by_div(self) -> List[Union[None, float]]:
+    def calc_normalized_scores(self, method: str) -> List[Union[None, float]]:
 
-        normalized_lm_scores = []
-        for lm_score, unigram_lm_score in zip(self.lm_scores,
-                                              self.unigram_lm_scores):
+        normalized_scores = []
+        for score, unigram_score, s in zip(self.rnnlm_scores,
+                                           self.unigram_scores,
+                                           self.sentences):
             x = None \
-                if lm_score is None or numpy.isclose(unigram_lm_score, 0.0, rtol=1e-05) \
-                else (-1) * float(lm_score) / float(unigram_lm_score)
-            normalized_lm_scores.append(x)
-        return normalized_lm_scores
+                if score is None or numpy.isclose(unigram_score,
+                                                  0.0, rtol=1e-05) \
+                else _f(score, unigram_score, len(s), method)
+            normalized_scores.append(x)
+        return normalized_scores
 
-    def calc_lm_scores_normalized_by_sub(self) -> List[Union[None, float]]:
 
-        normalized_lm_scores = []
-        for lm_score, unigram_lm_score in zip(self.lm_scores,
-                                              self.unigram_lm_scores):
-            x = None \
-                if lm_score is None or unigram_lm_score == 0 \
-                else float(lm_score) - float(unigram_lm_score)
-            normalized_lm_scores.append(x)
-        return normalized_lm_scores
+def _f(score: float, unigram_score: float, length: int, method: str) -> float:
 
-    def calc_lm_scores_normalized_by_len(self) -> List[Union[None, float]]:
-
-        normalized_lm_scores = []
-        for lm_score, unigram_lm_score, s in zip(self.lm_scores,
-                                                 self.unigram_lm_scores,
-                                                 self.sentences):
-            x = None \
-                if lm_score is None or len(s) == 0 \
-                else (float(lm_score) - float(unigram_lm_score)) / len(s)
-            normalized_lm_scores.append(x)
-        return normalized_lm_scores
+    if method == 'div':
+        return (-1) * float(score) / float(unigram_score)
+    elif method == 'sub':
+        return float(score) - float(unigram_score)
+    elif method == 'len':
+        return (float(score) - float(unigram_score)) / length
+    else:
+        raise ValueError
