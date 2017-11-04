@@ -1,10 +1,14 @@
 #!/bin/bash
 
+project_root="$(pwd)"
+
 tools="$(pwd)/tools"
 juman_uri="http://nlp.ist.i.kyoto-u.ac.jp/DLcounter/lime.cgi?down=http://nlp.ist.i.kyoto-u.ac.jp/nl-resource/juman/juman-7.01.tar.bz2"
 knp_uri="http://nlp.ist.i.kyoto-u.ac.jp/DLcounter/lime.cgi?down=http://nlp.ist.i.kyoto-u.ac.jp/nl-resource/knp/knp-4.18.tar.bz2"
 pyknp_uri="http://nlp.ist.i.kyoto-u.ac.jp/DLcounter/lime.cgi?down=http://lotus.kuee.kyoto-u.ac.jp/nl-resource/pyknp/pyknp-0.3.tar.gz"
 juman_prefix="${tools}"
+rnnlm_model_uri="https://s3-ap-northeast-1.amazonaws.com/plu-aist/trf/jawiki-20160818-100M-words"
+rnnlm_model="$(basename ${rnnlm_model_uri})"
 
 exists() {
     command -v "$1" > /dev/null 2>&1
@@ -12,11 +16,10 @@ exists() {
 
 export PATH="$PATH:${tools}/bin"
 
-if exists juman
+if (exists juman) && (exists knp)
 then
-    juman_location="$(which juman)"
-    juman_prefix=$(dirname $juman_location)
     echo "Juman is installed"
+    echo "KNP is installed"
 else
     mkdir -p tools/tmp
     juman_archive="$(basename $juman_uri)"
@@ -26,12 +29,7 @@ else
     ./configure --prefix="${tools}"
     make
     make install
-fi
 
-if exists knp
-then
-    echo "KNP is installed"
-else
     mkdir -p tools/tmp
     knp_archive="$(basename $knp_uri)"
     wget --no-clobber $knp_uri -O "${tools}/tmp/${knp_archive}"
@@ -70,7 +68,6 @@ then
     gunzip --keep "data/${db%.*}"
 fi
 
-project_root="$(pwd)"
 if exists rnnlm
 then
     echo "RNNLM is installed"
@@ -84,4 +81,16 @@ else
     make
     cd $project_root
     ln -sf ${tools}/tmp/faster-rnnlm/faster-rnnlm/rnnlm tools/bin/rnnlm
+fi
+
+pip install -r "${project_root}/requirements.txt"
+
+if [ ! -f data/$rnnlm_model ]
+then
+    wget $rnnlm_model_uri -O data/$(basename ${rnnlm_model_uri})
+fi
+
+if [ ! -f "data/${rnnlm_model}.nnet" ]
+then
+    wget "${rnnlm_model_uri}.nnet" -O "data/$(basename ${rnnlm_model_uri}).nnet"
 fi

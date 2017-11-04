@@ -1,10 +1,10 @@
 import re
-from typing import Dict
+from typing import Dict, List
 from collections import Counter
 
 import numpy
 from pyknp import KNP, Juman
-from janome.tokenizer import Tokenizer
+from janome.tokenizer import Tokenizer  # conditional の検出で使う
 
 from trf.chunk import Chunk
 from trf.constant import DefaultOptions
@@ -14,9 +14,14 @@ import trf.util as util
 
 class Tree:
 
-    def __init__(self, sentence, chunks):
+    def __init__(self,
+                 sentence: str,
+                 chunks: List[Chunk],
+                 surfaces: List[str]):
+
         self.sentence = sentence
         self.chunks = chunks
+        self.surfaces = surfaces
         self.depth = self.depth()
 
     def find_next_chunk(self, chunk_id, depth):
@@ -29,7 +34,7 @@ class Tree:
             return self.find_next_chunk(next_chunk_id,
                                         depth + 1)
 
-    def depth(self):
+    def depth(self) -> int:
         """Calculate the mean depth of dependency tree
         Returns:
             int: The depth of given tree
@@ -48,7 +53,7 @@ class Analyser:
     """Class for syntactic Analysis
     """
 
-    def __init__(self, text, delimiter='\n'):
+    def __init__(self, text: str, delimiter: str='\n'):
         self.text = text
         self.delimiter = delimiter
         self.sentences = util.split_text(self.text, delimiter)
@@ -69,7 +74,7 @@ class Analyser:
             else self.calc_n_conditionals() / self.n_sentences
         self.mean_tree_depths = self.calc_mean_tree_depths()
 
-    def _trees(self):
+    def _trees(self) -> Tree:
         """Analyse dependency structure using KNP
         Returns:
             list(trf.Tree)
@@ -79,13 +84,14 @@ class Analyser:
 
         for sentence in self.sentences:
             chunks = []
-            for bnst in self.knp.parse(sentence).bnst_list():
+            parse_result = self.knp.parse(sentence)
+            for bnst in parse_result.bnst_list():
                 chunk = Chunk(chunk_id=bnst.bnst_id,
                               link=bnst.parent_id,
                               description=bnst.fstring)
                 chunks.append(chunk)
-
-            results.append(Tree(sentence, chunks))
+            surfaces = [m.midasi for m in parse_result.mrph_list()]
+            results.append(Tree(sentence, chunks, surfaces))
 
         return results
 

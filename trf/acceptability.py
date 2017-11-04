@@ -5,17 +5,20 @@ import tempfile
 from subprocess import Popen, PIPE
 import math
 import numpy
+from janome.tokenizer import Tokenizer
 
 import trf.constant as const
+from trf.analyser import Tree
+from trf.util import split_text
 
 
 class Acceptability:
 
-    def __init__(self, text: str, rnnlm_model_path: str):
+    def __init__(self, text: str, delimiter: str, rnnlm_model_path: str):
 
         self.text = text
-        self.sentences = [s.strip() for s in text.split('\n')
-                          if s.strip() != '']
+        self.sentences = split_text(text, delimiter)
+        self.tss = tokenize_by_janome(self.sentences)
 
         if not os.path.isfile(rnnlm_model_path):
             raise FileNotFoundError(errno.ENOENT,
@@ -30,27 +33,36 @@ class Acceptability:
 
         self.mean_unigram_scores = self.calc_mean_unigram_scores()
 
-        self.normalized_scores_div = \
-            self.calc_normalized_scores('div')
+        # self.normalized_scores_div = \
+        #     self.calc_normalized_scores('div')
 
-        self.normalized_scores_sub = \
-            self.calc_normalized_scores('sub')
+        # self.normalized_scores_sub = \
+        #     self.calc_normalized_scores('sub')
 
-        self.normalized_scores_len = \
-            self.calc_normalized_scores('len')
+        # self.normalized_scores_len = \
+        #     self.calc_normalized_scores('len')
+
+        self.mean_loglikelihood = \
+            None \
+            if None in self.rnnlm_scores \
+            else numpy.mean(self.rnnlm_scores)
 
     def get_rnnlm_scores(self) -> List[Union[None, float]]:
         """Get log likelihood scores by calling RNNLM
         """
 
         textfile = tempfile.NamedTemporaryFile(delete=True)
-        textfile.write(str.encode(self.text))
+        content = '\n'.join([''.join(ts) for ts in self.tss]) + '\n'
+        textfile.write(str.encode(content))
         textfile.seek(0)
 
-        command = ['rnnlm', '-rnnlm', self.rnnlm_model_path,
-                   '-test', textfile.name]
+        command = ['rnnlm',
+                   '-rnnlm',
+                   self.rnnlm_model_path,
+                   '-test',
+                   textfile.name]
         process = Popen(command, stdout=PIPE, stderr=PIPE)
-        output , _ = process.communicate()
+        output , err = process.communicate()
         lines = [line.strip() for line in output.decode('UTF-8').split('\n')
                  if line.strip() != '']
         scores = []
@@ -86,12 +98,12 @@ class Acceptability:
     def calc_unigram_scores(self) -> List[float]:
 
         unigram_scores = []
-        for s in self.sentences:
+        for ts in self.tss:
             unigram_score = 0.0
 
-            for word in s.split():
+            for t in ts:
                 n = float(self.n_total_words)
-                x = float(self.word_freq.get(word, self.word_freq['<unk/>']))
+                x = float(self.word_freq.get(t, self.word_freq['<unk/>']))
                 unigram_score += math.log(x / n)
 
             unigram_scores.append(unigram_score)
@@ -132,3 +144,13 @@ def _f(score: float, unigram_score: float, length: int, method: str) -> float:
         return (float(score) - float(unigram_score)) / length
     else:
         raise ValueError
+
+
+def tokenize_by_janome(sentences: List[str]) -> List[List[str]]:
+    tokenizer = Tokenizer()
+    tss = []
+    for s in sentences:
+        result = tokenizer.tokenize(s)
+        ts = ' '.join([t.surface for t in result])
+        tss.append(ts)
+    return tss

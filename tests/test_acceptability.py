@@ -12,38 +12,42 @@ class TestAcceptability(unittest.TestCase):
 
         check_executable('rnnlm')
 
-        self.text = '英語 と 呼ば れる\n'
-        self.rnnlm_model_path = 'data/jawiki-20160818'
-        self.acceptability = Acceptability(self.text, self.rnnlm_model_path)
+        self.text = '英語と呼ばれる\n'
+        self.delimiter = '\n'
+        self.rnnlm_model_path = 'data/jawiki-20160818-100M-words'
+        self.acceptability = \
+            Acceptability(self.text,
+                          self.delimiter,
+                          self.rnnlm_model_path)
 
     def test_rnnlm_scores(self):
         scores = self.acceptability.rnnlm_scores
-        self.assertAlmostEqual(scores[0], -11.295, places=2)
+        self.assertAlmostEqual(scores[0], -11.571, places=2)
 
     def test_unigram_scores(self):
 
         scores = self.acceptability.unigram_scores
-        self.assertAlmostEqual(scores[0], -14.098, places=2)
+        self.assertAlmostEqual(scores[0], -31.457, places=2)
 
-    def test_mean_unigram_scores(self):
+    # def test_mean_unigram_scores(self):
 
-        scores = self.acceptability.mean_unigram_scores
-        self.assertAlmostEqual(scores[0], -14.098, places=2)
+    #    scores = self.acceptability.mean_unigram_scores
+    #    self.assertAlmostEqual(scores[0], -2.12, places=2)
 
-    def test_normalized_scores_div(self):
+    # def test_normalized_scores_div(self):
 
-        scores = self.acceptability.normalized_scores_div
-        self.assertAlmostEqual(scores[0], -14.098, places=2)
+    #    scores = self.acceptability.normalized_scores_div
+    #    self.assertAlmostEqual(scores[0], -5.446, places=2)
 
-    def test_normalized_scores_sub(self):
+    # def test_normalized_scores_sub(self):
 
-        scores = self.acceptability.normalized_scores_sub
-        self.assertAlmostEqual(scores[0], -14.098, places=2)
+    #    scores = self.acceptability.normalized_scores_sub
+    #    self.assertAlmostEqual(scores[0], -9.447, places=2)
 
-    def test_normalized_scores_len(self):
+    # def test_normalized_scores_len(self):
 
-        scores = self.acceptability.normalized_scores_len
-        self.assertAlmostEqual(scores[0], -14.098, places=2)
+    #    scores = self.acceptability.normalized_scores_len
+    #    self.assertAlmostEqual(scores[0], -0.9447, places=2)
 
     def tearDown(self):
         pass

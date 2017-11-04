@@ -1,4 +1,10 @@
+from typing import List
 import shutil
+
+
+def split_text(text: str, delimiter: str='\n') -> List[str]:
+    s = [s.strip() for s in text.split(delimiter) if len(s.strip()) > 0]
+    return s
 
 
 def check_executable(executable: str):

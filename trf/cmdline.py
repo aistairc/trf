@@ -21,6 +21,8 @@ def translate(en: str):
         return '係り受け木の深さ'
     elif en == 'r_conditional':
         return '仮定節'
+    elif en == 'mean_loglikelihood':
+        return '言語モデルの尤度'
     else:
         return en
 
@@ -50,6 +52,8 @@ class Section:
             self.cat_ja = '統語情報に基づく指標'
         elif cat == 'language_model':
             self.cat_ja = '言語モデルに基づく指標'
+        else:
+            self.cat_ja = ''
 
     def show(self, lang: str='ja'):
         if lang == 'ja':
@@ -68,17 +72,23 @@ def main():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-f",
-                        "--filename",
+    parser.add_argument('-f',
+                        '--filename',
                         type=str,
                         help='target text')
 
-    parser.add_argument("--delimiter",
+    parser.add_argument('--delimiter',
                         type=str,
-                        default='。',
+                        default='\n',
                         help='features to calculate')
 
-    parser.add_argument("--output-lang",
+    parser.add_argument('-m',
+                        '--rnnlm-model-path',
+                        type=str,
+                        default='data/jawiki-20160818-100M-words',
+                        help='RNNLM model path')
+
+    parser.add_argument('--output-lang',
                         type=str,
                         default='ja',
                         help='ja')
@@ -117,19 +127,15 @@ def main():
                               '{:.2f}'.format(v)))
     Section('syntax', metrics).show()
 
-    acceptability = Acceptability(text)
     metrics = []
-    metrics.append(Metric('unigram_score',
-                          '{:.2f}'.format(acceptability.unigram_scores)))
-    metrics.append(Metric('mean_unigram_score',
-                          '{:.2f}'.format(acceptability.mean_unigram_scores)))
-    metrics.append(Metric('normalized_score (division)',
-                          '{:.2f}'.format(acceptability.normalized_scores_div)))
-    metrics.append(Metric('normalized_score (subtraction)',
-                          '{:.2f}'.format(acceptability.normalized_scores_sub)))
-    metrics.append(Metric('normalized_score (subtraction)',
-                          '{:.2f}'.format(acceptability.normalized_scores_len)))
-    Section('syntax', metrics).show()
+    acceptability = \
+        Acceptability(text,
+                      args.delimiter,
+                      args.rnnlm_model_path)
+    score = acceptability.mean_loglikelihood
+    score = 'None' if score is None else '{:.2f}'.format(score)
+    metrics.append(Metric('mean_loglikelihood', score))
+    Section('language_model', metrics).show()
 
 
 if __name__ == '__main__':
