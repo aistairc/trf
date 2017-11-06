@@ -13,19 +13,18 @@ git clone https://github.com/aistairc/trf.git
 cd trf
 ./install-dependencies.sh
 export PATH="${PATH}:$(pwd)/tools/bin"
-python -m trf.cmdline
 ```
 
 ## 使用例
 
 テキストを直接与えて実行する場合
 ```bash
-echo 'ごはんを食べるつもりです。' | trf
+echo 'ごはんを食べるつもりです。' | python -m trf.cmdline
 ```
 
 テキストファイルを指定して実行する場合
 ```bash
-trf -f FILENAME
+python -m trf.cmdline -f FILENAME
 ```
 
 ## TRFがサポートする指標一覧
