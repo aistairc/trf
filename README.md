@@ -57,19 +57,18 @@ TRFは大きく分けて、`基本指標`、`語彙に基づく指標`、`統語
 
 ### 言語モデルに基づく指標
 
-容認度の詳細については [Lau et al. (2015)](https://aclanthology.coli.uni-saarland.de/papers/P15-1156/p15-1156) をご参照ください。
-
 | 指標名 | 指標の説明 |
 |:-----------|:-----------|
-| 容認度 (LogProb) | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\log&space;P_m&space;\left(\xi\right)" title="logprob" height="25px"/> |
-| 容認度 (Mean LP) | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\frac{\log&space;P_m&space;\left(\xi\right)}{\left&#124;\xi\right&#124;}" title="mean-lp" height="60px"/> |
-| 容認度 (Norm LP (Div))  | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\frac{\log&space;P_m&space;\left(\xi\right)}{\log&space;P_u\left(\xi\right)}" title="norm-lp-div" height="60px"/> |
-| 容認度 (Norm LP (Sub))  | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\log&space;P_m&space;\left(\xi\right)-\log&space;P_u\left(\xi\right)" title="norm-lp-sub" height="25px"/> |
-| 容認度 (SLOR: Syntactic Log-Odds Ratio)  | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\frac{\log&space;P_m&space;\left(\xi\right)-\log&space;P_u\left(\xi\right)}{\left&#124;\xi\right&#124;}" title="mean-lp" height="60px"/> |
+| 容認度 (LogProb) | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\log&space;P_\text{model}&space;\left(\xi\right)" title="logprob" height="25px"/> |
+| 容認度 (Mean LP) | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\frac{\log&space;P_\text{model}&space;\left(\xi\right)}{\text{length}\left(\xi\right)}" title="mean-lp" height="60px"/> |
+| 容認度 (Norm LP (Div))  | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\frac{\log&space;P_\text{model}&space;\left(\xi\right)}{\log&space;P_\text{unigram}\left(\xi\right)}" title="norm-lp-div" height="60px"/> |
+| 容認度 (Norm LP (Sub))  | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\log&space;P_\text{model}&space;\left(\xi\right)-\log&space;P_\text{unigram}\left(\xi\right)" title="norm-lp-sub" height="25px"/> |
+| 容認度 (SLOR: Syntactic Log-Odds Ratio)  | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\frac{\log&space;P_\text{model}&space;\left(\xi\right)-\log&space;P_\text{unigram}\left(\xi\right)}{\text{length}\left(\xi\right)}" title="mean-lp" height="60px"/> |
+
+詳細については [Lau et al. (2015)](https://aclanthology.coli.uni-saarland.de/papers/P15-1156/p15-1156) をご参照ください。
 
 ## Reference
-本ツールについて、さらに詳細な情報が知りたい場合は、
-「TRF: テキストの読みやすさ解析ツール」[[PDF](http://www.anlp.jp/proceedings/annual_meeting/2017/pdf_dir/P6-6.pdf)] をご参照ください。
+本ツールについて、さらに詳細な情報が知りたい場合は「TRF: テキストの読みやすさ解析ツール」[[PDF](http://www.anlp.jp/proceedings/annual_meeting/2017/pdf_dir/P6-6.pdf)] をご参照ください。
 
 ```tex
 @inproceedings{watanabe2017,
