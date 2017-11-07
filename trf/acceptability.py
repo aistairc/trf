@@ -8,7 +8,6 @@ import numpy
 from janome.tokenizer import Tokenizer
 
 import trf.constant as const
-from trf.analyser import Tree
 from trf.util import split_text
 
 
@@ -18,7 +17,7 @@ class Acceptability:
 
         self.text = text
         self.sentences = split_text(text, delimiter)
-        self.tss = tokenize_by_janome(self.sentences)
+        self.lengths, self.split_texts = tokenize(self.sentences)
 
         if not os.path.isfile(rnnlm_model_path):
             raise FileNotFoundError(errno.ENOENT,
@@ -28,26 +27,13 @@ class Acceptability:
 
         self.word_freq, self.n_total_words = self._load_word_freq(threshold=1)
 
-        self.rnnlm_scores = self.get_rnnlm_scores()
+        self.log_prob_scores = self.calc_log_prob_scores()
         self.unigram_scores = self.calc_unigram_scores()
+        self.mean_lp_scores = self.calc_mean_lp_scores()
+        self.norm_lp_div_scores = self.calc_log_prob_scores()
+        self.norm_lp_sub_scores = self.calc_unigram_scores()
 
-        self.mean_unigram_scores = self.calc_mean_unigram_scores()
-
-        # self.normalized_scores_div = \
-        #     self.calc_normalized_scores('div')
-
-        # self.normalized_scores_sub = \
-        #     self.calc_normalized_scores('sub')
-
-        # self.normalized_scores_len = \
-        #     self.calc_normalized_scores('len')
-
-        self.mean_loglikelihood = \
-            None \
-            if None in self.rnnlm_scores \
-            else numpy.mean(self.rnnlm_scores)
-
-    def get_rnnlm_scores(self) -> List[Union[None, float]]:
+    def calc_log_prob_scores(self) -> List[Union[None, float]]:
         """Get log likelihood scores by calling RNNLM
         """
 
@@ -62,7 +48,7 @@ class Acceptability:
                    '-test',
                    textfile.name]
         process = Popen(command, stdout=PIPE, stderr=PIPE)
-        output , err = process.communicate()
+        output, err = process.communicate()
         lines = [line.strip() for line in output.decode('UTF-8').split('\n')
                  if line.strip() != '']
         scores = []
@@ -95,6 +81,9 @@ class Acceptability:
 
         return (word_freq, n_total_words)
 
+    def average(xs: List[Union[None, float]]) -> float:
+        return 0.0
+
     def calc_unigram_scores(self) -> List[float]:
 
         unigram_scores = []
@@ -110,15 +99,14 @@ class Acceptability:
 
         return unigram_scores
 
-    def calc_mean_unigram_scores(self) -> List[Union[None, float]]:
-        mean_unigram_scores = []
-        for score, sentence in zip(self.unigram_scores, self.sentences):
-            n = len(self.sentences)
+    def calc_mean_lp_scores(self) -> List[Union[None, float]]:
+        mean_lp_scores = []
+        for score, length in zip(self.log_prob_scores, self.lenghts):
             x = None \
-                if score is None or n == 0 \
-                else float(score) / float(len(self.sentences))
-            mean_unigram_scores.append(x)
-        return mean_unigram_scores
+                if score is None or length == 0 \
+                else float(score) / float(length)
+            mean_lp_scores.append(x)
+        return mean_lp_scores
 
     def calc_normalized_scores(self, method: str) -> List[Union[None, float]]:
 
@@ -146,11 +134,17 @@ def _f(score: float, unigram_score: float, length: int, method: str) -> float:
         raise ValueError
 
 
-def tokenize_by_janome(sentences: List[str]) -> List[List[str]]:
+def tokenize(sentences: List[str]) -> Tuple[List[int], List[List[str]]]:
+
     tokenizer = Tokenizer()
-    tss = []
+    lengths = []
+    texts = []
     for s in sentences:
         result = tokenizer.tokenize(s)
-        ts = ' '.join([t.surface for t in result])
-        tss.append(ts)
-    return tss
+
+        surfaces = [t.surface for t in result]
+        lengths.append(len(surfaces))
+
+        text = ' '.join(surfaces)
+        texts.append(text)
+    return lengths, texts

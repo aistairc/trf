@@ -22,7 +22,13 @@ def translate(en: str):
     elif en == 'r_conditional':
         return '仮定節'
     elif en == 'mean_loglikelihood':
-        return '言語モデルの尤度'
+        return '言語モデルの対数尤度'
+    elif en == 'acceptability_div':
+        return '容認度 (Norm LP (Div))'
+    elif en == 'acceptability_sub':
+        return '容認度 (Norm LP (Sub))'
+    elif en == 'acceptability_slor (SLOR)':
+        return '容認度'
     else:
         return en
 
@@ -63,6 +69,7 @@ class Section:
         else:
             print('Unsupported language')
             sys.exit(1)
+
 
 def main():
 
@@ -135,6 +142,8 @@ def main():
     score = acceptability.mean_loglikelihood
     score = 'None' if score is None else '{:.2f}'.format(score)
     metrics.append(Metric('mean_loglikelihood', score))
+    normalized_score = acceptability.normalized_scores_len
+    metrics.append(Metric('norm_len', normalized_score))
     Section('language_model', metrics).show()
 
 
