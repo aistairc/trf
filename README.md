@@ -57,9 +57,15 @@ TRFは大きく分けて、`基本指標`、`語彙に基づく指標`、`統語
 
 ### 言語モデルに基づく指標
 
+容認度の詳細については [Lau et al. (2015)](https://aclanthology.coli.uni-saarland.de/papers/P15-1156/p15-1156) をご参照ください。
+
 | 指標名 | 指標の説明 |
 |:-----------|:-----------|
-| 言語モデルの尤度 | 各文の言語モデルの対数尤度の平均 |
+| 容認度 (LogProb) | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\log&space;P_m&space;\left(\xi\right)" title="logprob" height="25px"/> |
+| 容認度 (Mean LP) | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\frac{\log&space;P_m&space;\left(\xi\right)}{\left&#124;\xi\right&#124;}" title="mean-lp" height="60px"/> |
+| 容認度 (Norm LP (Div))  | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\frac{\log&space;P_m&space;\left(\xi\right)}{\log&space;P_u\left(\xi\right)}" title="norm-lp-div" height="60px"/> |
+| 容認度 (Norm LP (Sub))  | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\log&space;P_m&space;\left(\xi\right)-\log&space;P_u\left(\xi\right)" title="norm-lp-sub" height="25px"/> |
+| 容認度 (SLOR: Syntactic Log-Odds Ratio)  | <img src="https://latex.codecogs.com/svg.latex?\tiny&space;\frac{\log&space;P_m&space;\left(\xi\right)-\log&space;P_u\left(\xi\right)}{\left&#124;\xi\right&#124;}" title="mean-lp" height="60px"/> |
 
 ## Reference
 本ツールについて、さらに詳細な情報が知りたい場合は、
