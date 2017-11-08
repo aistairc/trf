@@ -16,8 +16,8 @@ class Acceptability:
     def __init__(self, text: str, delimiter: str, rnnlm_model_path: str):
 
         self.text = text
-        self.sentences = split_text(text, delimiter)
-        self.lengths, self.split_texts = tokenize(self.sentences)
+        self.sentences = split_text(text, delimiter)  # type: List[str]
+        lengths, self.tss = tokenize(self.sentences)
 
         if not os.path.isfile(rnnlm_model_path):
             raise FileNotFoundError(errno.ENOENT,
@@ -27,13 +27,27 @@ class Acceptability:
 
         self.word_freq, self.n_total_words = self._load_word_freq(threshold=1)
 
-        self.log_prob_scores = self.calc_log_prob_scores()
-        self.unigram_scores = self.calc_unigram_scores()
-        self.mean_lp_scores = self.calc_mean_lp_scores()
-        self.norm_lp_div_scores = self.calc_log_prob_scores()
-        self.norm_lp_sub_scores = self.calc_unigram_scores()
+        log_prob_scores = \
+            self._calc_log_prob_scores()
+        unigram_scores = \
+            self._calc_unigram_scores()
 
-    def calc_log_prob_scores(self) -> List[Union[None, float]]:
+        mean_lp_scores = \
+            calc_mean_lp_scores(log_prob_scores, lengths)
+        norm_lp_div_scores = \
+            calc_norm_lp_div_scores(log_prob_scores, unigram_scores)
+        norm_lp_sub_scores = \
+            calc_norm_lp_sub_scores(log_prob_scores, unigram_scores)
+        slor_scores = \
+            calc_slor_scores(norm_lp_sub_scores, lengths)
+
+        self.log_prob = average(log_prob_scores)
+        self.mean_lp = average(mean_lp_scores)
+        self.norm_lp_div = average(norm_lp_div_scores)
+        self.norm_lp_sub = average(norm_lp_sub_scores)
+        self.slor = average(slor_scores)
+
+    def _calc_log_prob_scores(self) -> List[Union[None, float]]:
         """Get log likelihood scores by calling RNNLM
         """
 
@@ -81,7 +95,7 @@ class Acceptability:
 
         return (word_freq, n_total_words)
 
-    def calc_unigram_scores(self) -> List[float]:
+    def _calc_unigram_scores(self) -> List[float]:
 
         unigram_scores = []
         for ts in self.tss:
@@ -98,7 +112,7 @@ class Acceptability:
 
 
 def average(xs: List[Union[None, float]]) -> float:
-    """
+    """Calculate the arithmetic mean of the given values (possibly None)
     >>> '{:.2f}'.format(average([None, 1.0, 2.0]))
     '1.50'
     """
@@ -126,8 +140,9 @@ def calc_mean_lp_scores(log_prob_scores: List[float],
     return mean_lp_scores
 
 
-def calc_norm_lp_div(log_prob_scores: List[float],
-                     unigram_scores: List[float]) -> List[Union[None, float]]:
+def calc_norm_lp_div_scores(
+        log_prob_scores: List[float],
+        unigram_scores: List[float]) -> List[Union[None, float]]:
     r"""
     .. math:
         \frac{%
@@ -135,7 +150,7 @@ def calc_norm_lp_div(log_prob_scores: List[float],
         }{%
             \log P_\text{unigram}\left(\xi\right)
         }
-    >>> '{:.3f}'.format(calc_norm_lp_div([-14.7579], [-35.6325])[0])
+    >>> '{:.3f}'.format(calc_norm_lp_div_scores([-14.7579], [-35.6325])[0])
     '-0.414'
     """
     results = []
@@ -148,17 +163,19 @@ def calc_norm_lp_div(log_prob_scores: List[float],
     return results
 
 
-def calc_norm_lp_sub(log_prob_scores: List[float],
-                     unigram_scores: List[float]) -> List[Union[None, float]]:
+def calc_norm_lp_sub_scores(
+        log_prob_scores: List[float],
+        unigram_scores: List[float]) -> List[Union[None, float]]:
     r"""
     .. math:
         \log P_\text{model}\left(\xi\right)
             - \log P_\text{unigram}\left(\xi\right)
+    >>> '{:.3f}'.format(calc_norm_lp_sub_scores([-14.7579], [-35.6325])[0])
+    '20.875'
     """
 
     results = []
-    for log_prob, unigram_score, length in zip(log_prob_scores,
-                                               unigram_scores):
+    for log_prob, unigram_score in zip(log_prob_scores, unigram_scores):
         if log_prob is None or numpy.isclose(unigram_score, 0.0, rtol=1e-05):
             x = None
         else:
@@ -167,12 +184,28 @@ def calc_norm_lp_sub(log_prob_scores: List[float],
     return results
 
 
-def _f(score: float, unigram_score: float, length: int, method: str) -> float:
+def calc_slor_scores(norm_lp_sub_scores: List[float],
+                     lengths: List[int]) -> List[Union[None, float]]:
+    r"""Calculate SLOR (Syntactic Log-Odds Ratio)
+    .. math:
+        \frac{%
+            \log P_\text{model}\left(\xi\right)
+                - \log P_\text{unigram}\left(\xi\right)
+        }{%
+            \text{length}\left(\xi\right)
+        }
+    >>> '{:.3f}'.format(calc_slor_scores([20.8746], [4])[0])
+    '5.219'
+    """
 
-    if method == 'len':
-        return (float(score) - float(unigram_score)) / length
-    else:
-        raise ValueError
+    results = []
+    for norm_lp_sub_score, length in zip(norm_lp_sub_scores, lengths):
+        if (norm_lp_sub_score is None) or length == 0:
+            x = None
+        else:
+            x = norm_lp_sub_score / length
+        results.append(x)
+    return results
 
 
 def tokenize(sentences: List[str]) -> Tuple[List[int], List[List[str]]]:

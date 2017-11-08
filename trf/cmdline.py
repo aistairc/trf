@@ -21,14 +21,16 @@ def translate(en: str):
         return '係り受け木の深さ'
     elif en == 'r_conditional':
         return '仮定節'
-    elif en == 'mean_loglikelihood':
-        return '言語モデルの対数尤度'
-    elif en == 'acceptability_div':
+    elif en == 'log_prob':
+        return '容認度 (LogProb)'
+    elif en == 'mean_lp':
+        return '容認度 (Mean LP)'
+    elif en == 'norm_lp_div':
         return '容認度 (Norm LP (Div))'
-    elif en == 'acceptability_sub':
+    elif en == 'norm_lp_sub':
         return '容認度 (Norm LP (Sub))'
-    elif en == 'acceptability_slor (SLOR)':
-        return '容認度'
+    elif en == 'slor':
+        return '容認度 (SLOR)'
     else:
         return en
 
@@ -69,6 +71,10 @@ class Section:
         else:
             print('Unsupported language')
             sys.exit(1)
+
+
+def _f(score: float) -> str:
+    return 'None' if score is None else '{:.2f}'.format(score)
 
 
 def main():
@@ -135,15 +141,14 @@ def main():
     Section('syntax', metrics).show()
 
     metrics = []
-    acceptability = \
-        Acceptability(text,
+    a = Acceptability(text,
                       args.delimiter,
                       args.rnnlm_model_path)
-    score = acceptability.mean_loglikelihood
-    score = 'None' if score is None else '{:.2f}'.format(score)
-    metrics.append(Metric('mean_loglikelihood', score))
-    normalized_score = acceptability.normalized_scores_len
-    metrics.append(Metric('norm_len', normalized_score))
+    metrics.append(Metric('log_prob', _f(a.log_prob)))
+    metrics.append(Metric('mean_lp', _f(a.mean_lp)))
+    metrics.append(Metric('norm_lp_div', _f(a.norm_lp_div)))
+    metrics.append(Metric('norm_lp_sub', _f(a.norm_lp_sub)))
+    metrics.append(Metric('slor', _f(a.slor)))
     Section('language_model', metrics).show()
 
 

@@ -1,6 +1,4 @@
 import unittest
-import warnings
-import tempfile
 
 from trf.acceptability import Acceptability
 from trf.util import check_executable
@@ -20,34 +18,34 @@ class TestAcceptability(unittest.TestCase):
                           self.delimiter,
                           self.rnnlm_model_path)
 
-    def test_rnnlm_scores(self):
-        scores = self.acceptability.rnnlm_scores
+    def test_log_prob(self):
+        scores = self.acceptability._calc_log_prob_scores()
         self.assertAlmostEqual(scores[0], -11.571, places=2)
 
     def test_unigram_scores(self):
 
-        scores = self.acceptability.unigram_scores
+        scores = self.acceptability._calc_unigram_scores()
         self.assertAlmostEqual(scores[0], -31.457, places=2)
 
-    # def test_mean_unigram_scores(self):
+    def test_mean_lp_scores(self):
 
-    #    scores = self.acceptability.mean_unigram_scores
-    #    self.assertAlmostEqual(scores[0], -2.12, places=2)
+        score = self.acceptability.mean_lp
+        self.assertAlmostEqual(score, -2.892, places=2)
 
-    # def test_normalized_scores_div(self):
+    def test_norm_lp_div(self):
 
-    #    scores = self.acceptability.normalized_scores_div
-    #    self.assertAlmostEqual(scores[0], -5.446, places=2)
+        score = self.acceptability.norm_lp_div
+        self.assertAlmostEqual(score, -0.3678, places=2)
 
-    # def test_normalized_scores_sub(self):
+    def test_norm_lp_sub(self):
 
-    #    scores = self.acceptability.normalized_scores_sub
-    #    self.assertAlmostEqual(scores[0], -9.447, places=2)
+        score = self.acceptability.norm_lp_sub
+        self.assertAlmostEqual(score, 19.885, places=2)
 
-    # def test_normalized_scores_len(self):
+    def test_slor(self):
 
-    #    scores = self.acceptability.normalized_scores_len
-    #    self.assertAlmostEqual(scores[0], -0.9447, places=2)
+        score = self.acceptability.slor
+        self.assertAlmostEqual(score, 4.9713, places=2)
 
     def tearDown(self):
         pass
