@@ -81,9 +81,6 @@ class Acceptability:
 
         return (word_freq, n_total_words)
 
-    def average(xs: List[Union[None, float]]) -> float:
-        return 0.0
-
     def calc_unigram_scores(self) -> List[float]:
 
         unigram_scores = []
@@ -99,36 +96,80 @@ class Acceptability:
 
         return unigram_scores
 
-    def calc_mean_lp_scores(self) -> List[Union[None, float]]:
-        mean_lp_scores = []
-        for score, length in zip(self.log_prob_scores, self.lenghts):
-            x = None \
-                if score is None or length == 0 \
-                else float(score) / float(length)
-            mean_lp_scores.append(x)
-        return mean_lp_scores
 
-    def calc_normalized_scores(self, method: str) -> List[Union[None, float]]:
+def average(xs: List[Union[None, float]]) -> float:
+    """
+    >>> '{:.2f}'.format(average([None, 1.0, 2.0]))
+    '1.50'
+    """
+    return numpy.mean([x for x in xs if x is not None])
 
-        normalized_scores = []
-        for score, unigram_score, s in zip(self.rnnlm_scores,
-                                           self.unigram_scores,
-                                           self.sentences):
-            x = None \
-                if score is None or numpy.isclose(unigram_score,
-                                                  0.0, rtol=1e-05) \
-                else _f(score, unigram_score, len(s), method)
-            normalized_scores.append(x)
-        return normalized_scores
+
+def calc_mean_lp_scores(log_prob_scores: List[float],
+                        lengths: List[int]) -> List[Union[None, float]]:
+    r"""
+    .. math:
+        \frac{%
+            \log P_\text{model}\left(\xi\right)
+            }{%
+              \text{length}\left(\xi\right)
+            }
+    >>> '{:.3f}'.format(calc_mean_lp_scores([-14.7579], [4])[0])
+    '-3.689'
+    """
+    mean_lp_scores = []
+    for score, length in zip(log_prob_scores, lengths):
+        x = None \
+            if score is None or length == 0 \
+            else float(score) / float(length)
+        mean_lp_scores.append(x)
+    return mean_lp_scores
+
+
+def calc_norm_lp_div(log_prob_scores: List[float],
+                     unigram_scores: List[float]) -> List[Union[None, float]]:
+    r"""
+    .. math:
+        \frac{%
+            \log P_\text{model}\left(\xi\right)
+        }{%
+            \log P_\text{unigram}\left(\xi\right)
+        }
+    >>> '{:.3f}'.format(calc_norm_lp_div([-14.7579], [-35.6325])[0])
+    '-0.414'
+    """
+    results = []
+    for log_prob, unigram_score in zip(log_prob_scores, unigram_scores):
+        if log_prob is None or numpy.isclose(unigram_score, 0.0, rtol=1e-05):
+            x = None
+        else:
+            x = (-1.0) * float(log_prob) / float(unigram_score)
+        results.append(x)
+    return results
+
+
+def calc_norm_lp_sub(log_prob_scores: List[float],
+                     unigram_scores: List[float]) -> List[Union[None, float]]:
+    r"""
+    .. math:
+        \log P_\text{model}\left(\xi\right)
+            - \log P_\text{unigram}\left(\xi\right)
+    """
+
+    results = []
+    for log_prob, unigram_score, length in zip(log_prob_scores,
+                                               unigram_scores):
+        if log_prob is None or numpy.isclose(unigram_score, 0.0, rtol=1e-05):
+            x = None
+        else:
+            x = float(log_prob) - float(unigram_score)
+        results.append(x)
+    return results
 
 
 def _f(score: float, unigram_score: float, length: int, method: str) -> float:
 
-    if method == 'div':
-        return (-1) * float(score) / float(unigram_score)
-    elif method == 'sub':
-        return float(score) - float(unigram_score)
-    elif method == 'len':
+    if method == 'len':
         return (float(score) - float(unigram_score)) / length
     else:
         raise ValueError
@@ -148,3 +189,8 @@ def tokenize(sentences: List[str]) -> Tuple[List[int], List[List[str]]]:
         text = ' '.join(surfaces)
         texts.append(text)
     return lengths, texts
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod(verbose=True)
