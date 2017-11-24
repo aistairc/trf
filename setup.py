@@ -14,6 +14,5 @@ setup(name='trf',
           "numpy",
           "janome",
           "sqlalchemy"
-      ],
-      entry_points={"console_scripts": ["trf = trf.cmdline:main"]})
+      ])
 #      package_data={'', ['']},
