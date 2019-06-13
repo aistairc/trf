@@ -19,12 +19,12 @@ export PATH="${PATH}:$(pwd)/tools/bin"
 
 テキストを直接与えて実行する場合
 ```bash
-echo 'ごはんを食べるつもりです。' | python -m trf
+echo 'ごはんを食べるつもりです。' | python3 -m trf
 ```
 
 テキストファイルを指定して実行する場合
 ```bash
-python -m trf -f FILENAME
+python3 -m trf -f FILENAME
 ```
 
 ## TRFがサポートする指標一覧
