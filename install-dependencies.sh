@@ -72,7 +72,7 @@ else
     ln -sf ${tools}/tmp/faster-rnnlm/faster-rnnlm/rnnlm tools/bin/rnnlm
 fi
 
-pip install -r "${project_root}/requirements.txt"
+pip3 install -r "${project_root}/requirements.txt"
 
 if [ ! -f data/$rnnlm_model ]
 then
