@@ -4,7 +4,7 @@ TRFは、与えられた日本語テキストに対して、種々の読みや�
 ## Requirements
 
 + Python 3.6+
-+ [Juman](http://nlp.ist.i.kyoto-u.ac.jp/index.php?JUMAN), [KNP](http://nlp.ist.i.kyoto-u.ac.jp/index.php?KNP) and [PyKNP](http://nlp.ist.i.kyoto-u.ac.jp/index.php?PyKNP)
++ [Juman](http://nlp.ist.i.kyoto-u.ac.jp/index.php?JUMAN), [KNP](http://nlp.ist.i.kyoto-u.ac.jp/index.php?KNP) and [RNNLM](https://github.com/yandex/faster-rnnlm)
 
 ## インストール
 
