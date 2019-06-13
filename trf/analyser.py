@@ -58,9 +58,9 @@ class Analyser:
         self.delimiter = delimiter
         self.sentences = util.split_text(self.text, delimiter)
         self.n_sentences = len(self.sentences)
-        self.knp = KNP(option=DefaultOptions.KNP)
+        self.knp = KNP(option=DefaultOptions.KNP, jumanpp=False)
         self.trees = self._trees()
-        self.juman = Juman()
+        self.juman = Juman(jumanpp=False)
         self.rs_pos = self.calc_rs_pos()
         self.n_mrphs = self.calc_n_mrphs()
         self.n_chunks = self.calc_n_chunks()
