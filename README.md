@@ -1,4 +1,7 @@
 # TRF
+
+[![CircleCI](https://circleci.com/gh/aistairc/trf.svg?style=svg)](https://circleci.com/gh/aistairc/trf)
+
 TRFは、与えられた日本語テキストに対して、種々の読みやすさ指標を自動で計算し、出力するツールです。
 
 ## Requirements
