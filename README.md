@@ -1,4 +1,7 @@
 # TRF
+
+[![CircleCI](https://circleci.com/gh/aistairc/trf.svg?style=svg)](https://circleci.com/gh/aistairc/trf)
+
 TRFは、与えられた日本語テキストに対して、種々の読みやすさ指標を自動で計算し、出力するツールです。
 
 ## Requirements
@@ -6,13 +9,15 @@ TRFは、与えられた日本語テキストに対して、種々の読みや�
 + Python 3.6+
 + [Juman](http://nlp.ist.i.kyoto-u.ac.jp/index.php?JUMAN), [KNP](http://nlp.ist.i.kyoto-u.ac.jp/index.php?KNP) and [RNNLM](https://github.com/yandex/faster-rnnlm)
 
+Dockerイメージ[pecorarista/conda-knp](https://cloud.docker.com/repository/docker/pecorarista/conda-knp/general)を使うと便利です。
+
+
 ## インストール
 
 ```bash
 git clone https://github.com/aistairc/trf.git
 cd trf
-./install-dependencies.sh
-export PATH="${PATH}:$(pwd)/tools/bin"
+./download.sh
 ```
 
 ## 使用例

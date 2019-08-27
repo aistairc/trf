@@ -1,0 +1,11 @@
+channels:
+  - defaults
+dependencies:
+  - flake8
+  - isort
+  - numpy
+  - pip
+  - sqlalchemy
+  - pip:
+    - janome
+    - pyknp

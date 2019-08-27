@@ -1,9 +1,10 @@
 import errno
-import os
-from typing import Dict, List, Tuple, Union
-import tempfile
-from subprocess import Popen, PIPE
 import math
+import os
+import tempfile
+from subprocess import PIPE, Popen
+from typing import Dict, List, Tuple, Union
+
 import numpy
 from janome.tokenizer import Tokenizer
 

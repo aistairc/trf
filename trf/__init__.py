@@ -1,9 +1,9 @@
-import sys
 import argparse
+import sys
 from typing import List
 
-from trf.analyser import Analyser
 from trf.acceptability import Acceptability
+from trf.analyser import Analyser
 from trf.util import check_executable
 
 
@@ -63,7 +63,7 @@ class Section:
         else:
             self.cat_ja = ''
 
-    def show(self, lang: str='ja'):
+    def show(self, lang: str = 'ja'):
         if lang == 'ja':
             print('[{}]'.format(self.cat_ja))
             for metric in self.metrics:
