@@ -4,7 +4,7 @@ TRFは、与えられた日本語テキストに対して、種々の読みや�
 ## Requirements
 
 + Python 3.6+
-+ [Juman](http://nlp.ist.i.kyoto-u.ac.jp/index.php?JUMAN), [KNP](http://nlp.ist.i.kyoto-u.ac.jp/index.php?KNP) and [PyKNP](http://nlp.ist.i.kyoto-u.ac.jp/index.php?PyKNP)
++ [Juman](http://nlp.ist.i.kyoto-u.ac.jp/index.php?JUMAN), [KNP](http://nlp.ist.i.kyoto-u.ac.jp/index.php?KNP) and [RNNLM](https://github.com/yandex/faster-rnnlm)
 
 ## インストール
 
@@ -19,12 +19,12 @@ export PATH="${PATH}:$(pwd)/tools/bin"
 
 テキストを直接与えて実行する場合
 ```bash
-echo 'ごはんを食べるつもりです。' | python -m trf
+echo 'ごはんを食べるつもりです。' | python3 -m trf
 ```
 
 テキストファイルを指定して実行する場合
 ```bash
-python -m trf -f FILENAME
+python3 -m trf -f FILENAME
 ```
 
 ## TRFがサポートする指標一覧
