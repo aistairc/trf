@@ -16,7 +16,7 @@ fi
 
 if [ ! -f "data/$db" ]
 then
-    wget -O data/$db $jwordnet
+    wget --quiet -O data/$db $jwordnet
 fi
 
 if [ ! -f "data/${db%.*}" ]
@@ -40,10 +40,10 @@ rnnlm_model="$(basename ${rnnlm_model_uri})"
 
 if [ ! -f data/$rnnlm_model ]
 then
-    wget $rnnlm_model_uri -O data/$(basename ${rnnlm_model_uri})
+    wget --quiet $rnnlm_model_uri -O data/$(basename ${rnnlm_model_uri})
 fi
 
 if [ ! -f "data/${rnnlm_model}.nnet" ]
 then
-    wget "${rnnlm_model_uri}.nnet" -O "data/$(basename ${rnnlm_model_uri}).nnet"
+    wget --quiet "${rnnlm_model_uri}.nnet" -O "data/$(basename ${rnnlm_model_uri}).nnet"
 fi

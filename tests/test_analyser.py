@@ -93,7 +93,6 @@ class TestAnalyser(unittest.TestCase):
         sentences = ['ご飯を食べるらしい。',
                      'ご飯を食べるつもりだ。',
                      'ご飯を食べるつもりだ。']
-        n = len(sentences)
         text = ''.join(sentences)
 
         analyser = Analyser(text, delimiter='。')
@@ -110,14 +109,9 @@ class TestAnalyser(unittest.TestCase):
         sentences = ['ご飯を食べるらしい。',
                      '晴れたならば、そして元気ならば、ご飯を食べるつもりだ。',
                      '元気ならばご飯を食べるつもりだ。']
-        n = len(sentences)
         text = ''.join(sentences)
 
         analyser = Analyser(text, delimiter='。')
         r_conditional = analyser.r_conditional
 
         self.assertAlmostEqual(r_conditional, 2 / 3)
-
-
-if __name__ == '__main__':
-    unittest.main()
