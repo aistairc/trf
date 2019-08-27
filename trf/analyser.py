@@ -1,15 +1,15 @@
 import re
-from typing import Dict, List
 from collections import Counter
+from typing import Dict, List
 
 import numpy
-from pyknp import KNP, Juman
 from janome.tokenizer import Tokenizer  # conditional の検出で使う
 
+import trf.util as util
+import trf.wordnet as wordnet
+from pyknp import KNP, Juman
 from trf.chunk import Chunk
 from trf.constant import DefaultOptions
-import trf.wordnet as wordnet
-import trf.util as util
 
 
 class Tree:
@@ -53,7 +53,7 @@ class Analyser:
     """Class for syntactic Analysis
     """
 
-    def __init__(self, text: str, delimiter: str='\n'):
+    def __init__(self, text: str, delimiter: str = '\n'):
         self.text = text
         self.delimiter = delimiter
         self.sentences = util.split_text(self.text, delimiter)

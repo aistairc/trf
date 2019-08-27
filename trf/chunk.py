@@ -1,6 +1,3 @@
-from typing import List
-
-
 class Chunk(object):
 
     def __init__(self, chunk_id: int, link: int, description: str):

@@ -1,14 +1,12 @@
 from typing import List
-import sys
-import numpy as np
 
-from sqlalchemy import Column, String, Integer, and_
+import numpy as np
+from sqlalchemy import Column, Integer, String, and_
 from sqlalchemy.engine import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm.session import Session, sessionmaker
+from sqlalchemy.orm.session import sessionmaker
 
 from trf.constant import HYPERNYM
-
 
 Base = declarative_base()
 

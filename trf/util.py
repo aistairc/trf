@@ -1,8 +1,9 @@
-from typing import List
 import shutil
+import sys
+from typing import List
 
 
-def split_text(text: str, delimiter: str='\n') -> List[str]:
+def split_text(text: str, delimiter: str = '\n') -> List[str]:
     s = [s.strip() for s in text.split(delimiter) if len(s.strip()) > 0]
     return s
 
