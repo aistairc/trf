@@ -18,7 +18,7 @@ jobs:
       - run:
           name: Create an environment
           command: |
-            if [ ! -d /opt/nlp/.conda/envs/circleci ]
+            if [ ! -d /opt/conda/envs/circleci ]
             then
                 source /opt/conda/etc/profile.d/conda.sh
                 conda env create -f environment-fixed.yaml -n circleci --quiet

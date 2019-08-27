@@ -4,10 +4,10 @@ from typing import Dict, List
 
 import numpy
 from janome.tokenizer import Tokenizer  # conditional の検出で使う
+from pyknp import KNP, Juman
 
 import trf.util as util
 import trf.wordnet as wordnet
-from pyknp import KNP, Juman
 from trf.chunk import Chunk
 from trf.constant import DefaultOptions
 
