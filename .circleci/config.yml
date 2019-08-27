@@ -29,7 +29,7 @@ jobs:
       - save_cache:
           key: trf-{{ checksum "environment-fixed.yaml" }}
           paths:
-            - /opt/trf/.conda
+            - /opt/conda/envs
             - /opt/data
       - run:
           name: Check formats
@@ -43,6 +43,8 @@ jobs:
       - run:
           name: Run unit tests
           command: |
+            echo 'export PATH=${HOME}/usr/local/bin:$PATH' >> ${BASH_ENV}
+            source ${BASH_ENV}
             source /opt/conda/etc/profile.d/conda.sh
             conda activate circleci
             python setup.py test
