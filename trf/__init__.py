@@ -1,9 +1,9 @@
-import sys
 import argparse
+import sys
 from typing import List
 
-from trf.analyser import Analyser
 from trf.acceptability import Acceptability
+from trf.analyser import Analyser
 from trf.util import check_executable
 
 
