@@ -24,14 +24,7 @@ jobs:
             fi
       - run:
           name: Download data
-          command: |
-            mkdir /opt/nlp/data
-            wget -O "/opt/nlp/data/wnjpn.db.gz" "http://compling.hss.ntu.edu.sg/wnja/data/1.1/wnjpn.db.gz"
-            git clone https://github.com/yandex/faster-rnnlm.git /opt/nlp/faster-rnnlm
-            cd /opt/nlp/faster-rnnlm
-            make
-            wget "https://s3-ap-northeast-1.amazonaws.com/plu-aist/trf/jawiki-20160818-100M-words" -O /opt/nlp/data/jawiki-20160818-100M-words
-            ln -sf /opt/nlp/faster-rnnlm/faster-rnnlm/rnnlm /usr/local/bin/rnnlm
+          command: bash download.sh
       - save_cache:
           key: trf-{{ checksum "environment-fixed.yaml" }}
           paths:
