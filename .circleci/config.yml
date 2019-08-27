@@ -30,7 +30,8 @@ jobs:
           key: trf-{{ checksum "environment-fixed.yaml" }}
           paths:
             - /opt/conda/envs
-            - /opt/data
+            - /opt/nlp/project/data
+            - /opt/nlp/project/faster-rnnlm/faster-rnnlm
       - run:
           name: Check formats
           command: |

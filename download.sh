@@ -30,9 +30,10 @@ then
 else
     git clone https://github.com/yandex/faster-rnnlm.git
     cd faster-rnnlm
+    git checkout "c35e481d7d890aebd7667b0bab6681bc2bcdef20"
     ./build.sh
     cd ${project_root}
-    ln -sf faster-rnnlm/rnnlm ${project_root}/rnnlm
+    ln -sf faster-rnnlm/faster-rnnlm/rnnlm ${project_root}/rnnlm
 fi
 
 rnnlm_model_uri="https://s3-ap-northeast-1.amazonaws.com/plu-aist/trf/jawiki-20160818-100M-words"
