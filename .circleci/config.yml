@@ -44,7 +44,7 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            echo 'export PATH=${HOME}/usr/local/bin:$PATH' >> ${BASH_ENV}
+            echo 'export PATH=${HOME}/usr/local/bin:${HOME}/project/faster-rnnlm/faster-rnnlm:$PATH' >> ${BASH_ENV}
             source ${BASH_ENV}
             source /opt/conda/etc/profile.d/conda.sh
             conda activate circleci
